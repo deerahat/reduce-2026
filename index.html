@@ -48,17 +48,15 @@
         .slide-up-enter-from, .slide-up-leave-to { transform: translateY(20px); opacity: 0; }
     </style>
 </head>
-<body class="bg-muji-bg text-muji-text antialiased font-sans">
-    <div id="app" class="h-dvh w-full flex flex-col overflow-hidden select-none">
-        
-        <header class="bg-muji-card border-b border-muji-border px-4 py-3.5 flex items-center justify-between shrink-0">
-            <h1 class="text-xl font-medium tracking-wide">{{ pageTitle }}</h1>
-            <span class="text-xs font-medium px-2.5 py-1 bg-muji-bg rounded-full text-muji-green border border-muji-border/50">
-                2026 減脂計畫
-            </span>
-        </header>
+<body class="flex items-center justify-center min-h-screen">
 
-        <main class="flex-1 overflow-y-auto px-4 py-4 space-y-4 pb-24">
+    <div id="app" class="w-full max-w-md h-[100dvh] md:h-[850px] bg-muji-bg text-muji-text relative flex flex-col shadow-2xl md:rounded-[2.5rem] overflow-hidden md:border-8 md:border-white">
+        
+        <!-- App Header -->
+        <header class="pt-10 pb-3 px-6 bg-muji-bg/90 backdrop-blur-md z-10 sticky top-0">
+            <h1 class="text-2xl font-medium tracking-widest text-center">{{ pageTitle }}</h1>
+            <p class="text-xs text-muji-light text-center mt-1 tracking-wider">16:8 斷食計劃 • 久坐族專屬</p>
+        </header>
 
         <!-- Main Content -->
         <main class="flex-1 overflow-y-auto no-scrollbar px-6 pb-24 relative">
@@ -108,7 +106,7 @@
                         {{ formattedSelectedDate }}
                     </div>
 
-                    <!-- 午餐記錄 (13:00) -->
+                    <!-- 午餐記錄 (12:00) -->
                     <div class="bg-muji-card rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] border border-muji-border">
                         <div class="flex items-center mb-4">
                             <i class="fa-solid fa-sun text-muji-brown mr-2"></i>
@@ -117,12 +115,10 @@
                         <div class="space-y-3">
                             <div v-for="(label, key) in mealLabels" :key="key">
                                 <label class="text-xs text-muji-green font-medium mb-1 block">{{ label }}</label>
-                                <input 
-                                    type="text" 
-                                    v-model="records[selectedDate].lunch[key]" 
-                                    :placeholder="'請輸入' + label.split(' ')[0] + '...'"
-                                    class="w-full bg-muji-bg rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-muji-green/50 placeholder:text-muji-light/60 text-muji-text border border-transparent focus:bg-white transition-all"
-                                />
+                                <select v-model="records[selectedDate].lunch[key]" class="w-full bg-muji-bg rounded-xl px-4 py-2.5 text-sm appearance-none outline-none focus:ring-2 focus:ring-muji-green/50">
+                                    <option value="" disabled>請選擇...</option>
+                                    <option v-for="item in foods[key]" :value="item">{{ item }}</option>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -136,12 +132,10 @@
                         <div class="space-y-3">
                             <div v-for="(label, key) in mealLabels" :key="key">
                                 <label class="text-xs text-muji-green font-medium mb-1 block">{{ label }}</label>
-                                <input 
-                                    type="text" 
-                                    v-model="records[selectedDate].dinner[key]" 
-                                    :placeholder="'請輸入' + label.split(' ')[0] + '...'"
-                                    class="w-full bg-muji-bg rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-muji-green/50 placeholder:text-muji-light/60 text-muji-text border border-transparent focus:bg-white transition-all"
-                                />
+                                <select v-model="records[selectedDate].dinner[key]" class="w-full bg-muji-bg rounded-xl px-4 py-2.5 text-sm appearance-none outline-none focus:ring-2 focus:ring-muji-green/50">
+                                    <option value="" disabled>請選擇...</option>
+                                    <option v-for="item in foods[key]" :value="item">{{ item }}</option>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -185,7 +179,6 @@
                                     <button @click="deleteFormula('lunch', item.id)" class="hover:text-muji-red transition-colors"><i class="fa-solid fa-trash-can"></i></button>
                                 </div>
                             </div>
-                            <!-- 內容列表對齊 -->
                             <div class="space-y-2 text-sm">
                                 <div class="flex"><span class="w-16 text-muji-light text-xs mt-0.5">蛋白質</span><span>{{ item.protein }}</span></div>
                                 <div class="flex"><span class="w-16 text-muji-light text-xs mt-0.5">蔬菜</span><span>{{ item.veg }}</span></div>
@@ -229,6 +222,7 @@
                             </div>
                         </div>
                     </div>
+
                 </div>
 
                 
@@ -238,7 +232,7 @@
                         <ul class="space-y-3 text-sm leading-relaxed relative z-10">
                             <li class="flex items-start"><span class="text-muji-brown mr-2 mt-0.5"><i class="fa-solid fa-clock"></i></span><span><b>16:8 斷食：</b> 僅在 12:00 至 20:00 進食。下午 16:00 可安排一次高蛋白小食（如乳酪、豆漿）。</span></li>
                             <li class="flex items-start"><span class="text-muji-brown mr-2 mt-0.5"><i class="fa-solid fa-arrow-down-short-wide"></i></span><span><b>進食順序：</b> 蔬菜 → 蛋白質 → 碳水。</span></li>
-                            <li class="flex items-start"><span class="text-muji-brown mr-2 mt-0.5"><i class="fa-solid fa-person-walking"></i></span><span><b>飯後微活動：</b> 用「非運動消耗（NEAT）」來補足。肌肉量偏低的人，只要每天多動一點點，新陳代謝就會有感提升：這能有效防止脂肪囤積在腹部（減少內臟脂肪）。午晚餐後站立 15 分鐘，避免立刻坐下。</span></li>
+                            <li class="flex items-start"><span class="text-muji-brown mr-2 mt-0.5"><i class="fa-solid fa-person-walking"></i></span><span><b>飯後微活動：</b> 午晚餐後站立 15 分鐘，避免立刻坐下。</span></li>
                         </ul>
                     </div>
                     <div class="bg-muji-card rounded-2xl p-6 shadow-sm border border-muji-border">
@@ -255,28 +249,24 @@
         </main>
 
         <!-- ================= 底部導航欄 ================= -->
-        <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-muji-border/60 px-6 py-2.5 flex justify-around items-center z-40 shadow-[0_-2px_10px_rgba(0,0,0,0.02)]">
-            <button @click="currentTab = 'log'" :class="currentTab === 'log' ? 'text-muji-green font-medium' : 'text-muji-light'" class="flex flex-col items-center gap-1 transition-colors">
-                <i class="fa-solid fa-calendar-days text-lg"></i>
-                <span class="text-[10px] tracking-wider">飲食手帳</span>
+        <nav class="absolute bottom-0 w-full bg-white border-t border-muji-border px-4 py-3 pb-8 md:pb-4 flex justify-between items-center z-20">
+            <button @click="currentTab = 'log'" class="flex flex-col items-center w-1/3 p-1 transition-colors" :class="currentTab === 'log' ? 'text-muji-green' : 'text-muji-light'">
+                <i class="fa-solid fa-calendar-days text-xl mb-1"></i>
+                <span class="text-[10px] tracking-widest">記錄</span>
             </button>
-            
-            <button @click="currentTab = 'formula'" :class="currentTab === 'formula' ? 'text-muji-green font-medium' : 'text-muji-light'" class="flex flex-col items-center gap-1 transition-colors">
-                <i class="fa-solid fa-utensils text-lg"></i>
-                <span class="text-[10px] tracking-wider">餐單公式</span>
+            <button @click="currentTab = 'formula'" class="flex flex-col items-center w-1/3 p-1 transition-colors" :class="currentTab === 'formula' ? 'text-muji-green' : 'text-muji-light'">
+                <i class="fa-solid fa-utensils text-xl mb-1"></i>
+                <span class="text-[10px] tracking-widest">公式</span>
             </button>
-            
-            <button @click="currentTab = 'guide'" :class="currentTab === 'guide' ? 'text-muji-green font-medium' : 'text-muji-light'" class="flex flex-col items-center gap-1 transition-colors">
-                <i class="fa-solid fa-book-open text-lg"></i>
-                <span class="text-[10px] tracking-wider">減脂指南</span>
+            <button @click="currentTab = 'guide'" class="flex flex-col items-center w-1/3 p-1 transition-colors" :class="currentTab === 'guide' ? 'text-muji-green' : 'text-muji-light'">
+                <i class="fa-solid fa-book-open text-xl mb-1"></i>
+                <span class="text-[10px] tracking-widest">指南</span>
             </button>
         </nav>
-    </div>
 
         <!-- ================= 新增/編輯 Modal ================= -->
         <transition name="fade">
-            <div v-if="isModalOpen" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-                <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl transition-all">
+            <div v-if="isModalOpen" class="absolute inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-end md:items-center justify-center">
                 <transition name="slide-up" appear>
                     <div class="bg-muji-bg w-full md:w-[90%] rounded-t-3xl md:rounded-3xl p-6 pb-12 md:pb-6 shadow-2xl h-[85%] md:h-auto overflow-y-auto no-scrollbar flex flex-col">
                         <div class="flex justify-between items-center mb-6">
@@ -320,12 +310,10 @@
         </transition>
 
         <!-- Toast 提示 -->
-    <Transition name="fade">
-         <div v-if="toastVisible" class="fixed top-20 left-1/2 -translate-x-1/2 bg-muji-text/90 text-white text-xs px-4 py-2.5 rounded-full z-50 shadow-lg tracking-wide flex items-center gap-2 backdrop-blur-sm">
-            <i class="fa-solid fa-circle-check text-muji-green"></i>
-        {{ toastMessage }}
+        <div v-if="toastVisible" class="absolute top-20 left-1/2 transform -translate-x-1/2 bg-muji-text text-white text-sm px-6 py-3 rounded-full shadow-lg z-[60] flex items-center transition-all whitespace-nowrap">
+            <i class="fa-solid fa-check-circle text-muji-green mr-2"></i> {{ toastMessage }}
         </div>
-    </Transition>
+
     </div>
 
     <script>
@@ -343,7 +331,7 @@
             const toastVisible = ref(false);
             const toastMessage = ref('');
 
-            // ================= 動態月曆核心 =================
+            // ================= 2026年動態月曆核心 =================
             const today = new Date();
             const currentYear = ref(today.getFullYear());
             const currentMonth = ref(today.getMonth()); // 0-11 代表 1-12月
@@ -353,8 +341,8 @@
             };
 
             const selectedDate = ref(formatDateString(today.getFullYear(), today.getMonth(), today.getDate()));
-            
-            // 安全防崩潰：初始化時，立即塞入今日的空白結構，確保 HTML 加載時不會噴 undefined 錯誤
+
+            // 【修改這裡】不要用空物件，直接預先塞入今天的空白結構
             const records = reactive({
                 [selectedDate.value]: {
                     lunch: { protein: '', veg: '', carb: '' },
@@ -409,15 +397,14 @@
                     currentMonth.value = 0;
                     currentYear.value++;
                 } else {
-                    currentMonth.value--;
+                    currentMonth.value++;
                 }
             };
 
             // ================= 雲端資料同步核心邏輯 =================
             
-            // 從雲端抓取特定日期的紀錄
             const fetchRecordByDate = async (dateStr) => {
-                // 發起請求前，如果該日期在本地還沒有結構，先幫它建立空白結構，防止畫面崩潰
+                // 如果該日期在本地還沒有結構，先幫它建立空白結構，防止畫面崩潰
                 if (!records[dateStr]) {
                     records[dateStr] = {
                         lunch: { protein: '', veg: '', carb: '' },
@@ -429,10 +416,10 @@
                         .from('records')
                         .select('*')
                         .eq('date', dateStr)
-                        .maybeSingle(); // 避免 406 錯誤
+                        .maybeSingle();
 
                     if (data) {
-                        // 有雲端資料則精確覆蓋
+                        // 有資料時，直接覆蓋內容，這能保持 Vue 的響應式監聽
                         records[dateStr].lunch = data.lunch_data || { protein: '', veg: '', carb: '' };
                         records[dateStr].dinner = data.dinner_data || { protein: '', veg: '', carb: '' };
                     }
@@ -444,8 +431,8 @@
             // 切換日期
             const selectDate = async (dateStr) => {
                 selectedDate.value = dateStr;
-                // 若本地尚未快取此日期，立刻賦予空白結構並同時向雲端請求
-                if (!records[dateStr] || (records[dateStr].lunch.protein === '' && records[dateStr].lunch.veg === '' && records[dateStr].lunch.carb === '')) {
+                if (!records[dateStr]) {
+                    // 在發出非同步請求的「同時」，立刻建立空白結構，防止切換時畫面閃爍報錯
                     records[dateStr] = {
                         lunch: { protein: '', veg: '', carb: '' },
                         dinner: { protein: '', veg: '', carb: '' }
@@ -474,7 +461,7 @@
                 }
             };
 
-            // 生命週期掛載：初始化執行
+            // 生命週期掛載：網格載入時執行初始化
             onMounted(async () => {
                 // 1. 載入雲端餐單公式
                 const { data: formulaData, error: formulaError } = await supabase
@@ -492,10 +479,15 @@
                 await fetchRecordByDate(selectedDate.value);
             });
 
-            // 欄位標籤配置
+            // ================= 基礎食物庫 =================
+            const foods = {
+                protein: ['無', '高蛋白小食 (如希臘乳酪)', '煎雞胸肉', '去皮雞腿肉', '水煮蛋/茶葉蛋', '豆腐/豆漿', '清蒸魚柳/三文魚', '瘦牛肉/牛腱', '蝦仁'],
+                veg: ['無', '西蘭花', '椰菜花', '菠菜/小白菜', '翠玉瓜', '三色椒', '各式菇類', '番茄/青瓜', '綜合生菜'],
+                carb: ['無', '烤番薯 (半個)', '糙米飯 (半碗)', '南瓜', '粟米', '燕麥', '蕎麥麵', '全麥麵包']
+            };
             const mealLabels = { protein: '蛋白質 (1/4)', veg: '蔬菜 (1/2)', carb: '優質碳水 (適量)' };
 
-            // ================= 餐單公式數據 =================
+            // ================= 餐單公式數據 (預設為空，等待雲端載入) =================
             const formulas = reactive({
                 lunch: [],
                 dinner: []
@@ -593,7 +585,7 @@
             };
 
             return {
-                currentTab, formulaType, mealLabels, pageTitle,
+                currentTab, formulaType, foods, mealLabels, pageTitle,
                 currentYear, currentMonth, calendarPadding, calendarDays, selectedDate, formattedSelectedDate, prevMonth, nextMonth, selectDate, records,
                 formulas, isModalOpen, form, openModal, closeModal, saveFormula, deleteFormula, saveRecord,
                 showToast, toastVisible, toastMessage
