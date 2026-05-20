@@ -113,34 +113,89 @@
                     </button>
                 </div>
 
-                <!-- ================= 頁面 2：便當公式 (CRUD) ================= -->
-                <div v-if="currentTab === 'bento'" key="bento" class="space-y-5">
+                <!-- ================= 頁面 2：餐單公式 (CRUD) ================= -->
+                <div v-if="currentTab === 'formula'" key="formula" class="space-y-5">
                     
-                    <button @click="openModal()" class="w-full border-2 border-dashed border-muji-green/50 text-muji-green rounded-2xl py-4 flex flex-col items-center justify-center hover:bg-muji-green/10 transition-colors">
-                        <i class="fa-solid fa-plus text-xl mb-1"></i>
-                        <span class="text-sm font-medium">新增便當公式</span>
-                    </button>
+                    <!-- 子標籤切換：午餐 vs 晚餐 -->
+                    <div class="flex bg-muji-border/50 p-1 rounded-full">
+                        <button @click="formulaType = 'lunch'" :class="['flex-1 py-2 rounded-full text-sm font-medium transition-all', formulaType === 'lunch' ? 'bg-white shadow-sm text-muji-green' : 'text-muji-light']">
+                            <i class="fa-solid fa-sun mr-1"></i> 午餐便當
+                        </button>
+                        <button @click="formulaType = 'dinner'" :class="['flex-1 py-2 rounded-full text-sm font-medium transition-all', formulaType === 'dinner' ? 'bg-white shadow-sm text-muji-brown' : 'text-muji-light']">
+                            <i class="fa-solid fa-moon mr-1"></i> 晚餐公式
+                        </button>
+                    </div>
 
-                    <!-- 便當列表 -->
-                    <div v-for="bento in bentoList" :key="bento.id" class="bg-muji-card rounded-2xl p-5 shadow-sm border border-muji-border relative">
-                        <div class="flex justify-between items-start mb-3">
-                            <h3 class="font-medium text-lg text-muji-brown"><i class="fa-solid fa-box-archive mr-2 text-sm"></i>{{ bento.name }}</h3>
-                            <div class="space-x-3 text-muji-light">
-                                <button @click="openModal(bento)" class="hover:text-muji-green transition-colors"><i class="fa-solid fa-pen"></i></button>
-                                <button @click="deleteBento(bento.id)" class="hover:text-muji-red transition-colors"><i class="fa-solid fa-trash-can"></i></button>
+                    <!-- 午餐視圖 -->
+                    <div v-if="formulaType === 'lunch'" class="space-y-4">
+                        <!-- 午餐貼士 -->
+                        <div class="bg-muji-green/10 p-4 rounded-2xl flex items-start text-muji-green text-xs leading-relaxed">
+                            <i class="fa-solid fa-lightbulb mt-0.5 mr-2 text-sm"></i>
+                            <div>
+                                <p class="font-medium mb-1">午餐帶飯貼士：</p>
+                                <p>為打破十多個小時的斷食，第一餐尤為關鍵。請挑選「耐微波」的蔬菜（如西蘭花、三色椒），避開綠葉菜以防變黃及營養流失。多用天然香料取代醬汁。</p>
                             </div>
                         </div>
-                        <div class="space-y-2 text-sm">
-                            <div class="flex"><span class="w-16 text-muji-light text-xs mt-0.5">蛋白質</span><span>{{ bento.protein }}</span></div>
-                            <div class="flex"><span class="w-16 text-muji-light text-xs mt-0.5">蔬菜</span><span>{{ bento.veg }}</span></div>
-                            <div class="flex"><span class="w-16 text-muji-light text-xs mt-0.5">碳水</span><span>{{ bento.carb }}</span></div>
-                        </div>
-                        <!-- 備註區塊 -->
-                        <div v-if="bento.notes" class="mt-4 pt-3 border-t border-muji-border/60 text-xs text-muji-light flex items-start bg-muji-bg/50 p-2 rounded-lg">
-                            <i class="fa-solid fa-thumbtack mt-0.5 mr-2 text-muji-brown/60"></i>
-                            <span>{{ bento.notes }}</span>
+
+                        <button @click="openModal('lunch')" class="w-full border-2 border-dashed border-muji-green/50 text-muji-green rounded-2xl py-4 flex flex-col items-center justify-center hover:bg-muji-green/10 transition-colors">
+                            <i class="fa-solid fa-plus text-xl mb-1"></i>
+                            <span class="text-sm font-medium">新增午餐便當</span>
+                        </button>
+
+                        <div v-for="item in formulas.lunch" :key="item.id" class="bg-muji-card rounded-2xl p-5 shadow-sm border border-muji-border relative">
+                            <div class="flex justify-between items-start mb-3">
+                                <h3 class="font-medium text-lg text-muji-green"><i class="fa-solid fa-box-archive mr-2 text-sm"></i>{{ item.name }}</h3>
+                                <div class="space-x-3 text-muji-light">
+                                    <button @click="openModal('lunch', item)" class="hover:text-muji-green transition-colors"><i class="fa-solid fa-pen"></i></button>
+                                    <button @click="deleteFormula('lunch', item.id)" class="hover:text-muji-red transition-colors"><i class="fa-solid fa-trash-can"></i></button>
+                                </div>
+                            </div>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex"><span class="w-16 text-muji-light text-xs mt-0.5">蛋白質</span><span>{{ item.protein }}</span></div>
+                                <div class="flex"><span class="w-16 text-muji-light text-xs mt-0.5">蔬菜</span><span>{{ item.veg }}</span></div>
+                                <div class="flex"><span class="w-16 text-muji-light text-xs mt-0.5">碳水</span><span>{{ item.carb }}</span></div>
+                            </div>
+                            <div v-if="item.notes" class="mt-4 pt-3 border-t border-muji-border/60 text-xs text-muji-light flex items-start bg-muji-bg/50 p-2 rounded-lg">
+                                <i class="fa-solid fa-thumbtack mt-0.5 mr-2 text-muji-green/60"></i><span>{{ item.notes }}</span>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- 晚餐視圖 -->
+                    <div v-if="formulaType === 'dinner'" class="space-y-4">
+                        <!-- 晚餐貼士 -->
+                        <div class="bg-muji-brown/10 p-4 rounded-2xl flex items-start text-muji-brown text-xs leading-relaxed">
+                            <i class="fa-solid fa-lightbulb mt-0.5 mr-2 text-sm"></i>
+                            <div>
+                                <p class="font-medium mb-1">晚餐現煮貼士：</p>
+                                <p>目標在 18:00 前完成晚餐。由於不需要微波，可多吃新鮮的綠葉蔬菜（如菠菜、白菜）。為了提升睡眠質素並延長夜間燃脂，晚餐碳水可適量減半或以南瓜等根莖類取代。</p>
+                            </div>
+                        </div>
+
+                        <button @click="openModal('dinner')" class="w-full border-2 border-dashed border-muji-brown/50 text-muji-brown rounded-2xl py-4 flex flex-col items-center justify-center hover:bg-muji-brown/10 transition-colors">
+                            <i class="fa-solid fa-plus text-xl mb-1"></i>
+                            <span class="text-sm font-medium">新增晚餐公式</span>
+                        </button>
+
+                        <div v-for="item in formulas.dinner" :key="item.id" class="bg-muji-card rounded-2xl p-5 shadow-sm border border-muji-border relative">
+                            <div class="flex justify-between items-start mb-3">
+                                <h3 class="font-medium text-lg text-muji-brown"><i class="fa-solid fa-bowl-food mr-2 text-sm"></i>{{ item.name }}</h3>
+                                <div class="space-x-3 text-muji-light">
+                                    <button @click="openModal('dinner', item)" class="hover:text-muji-brown transition-colors"><i class="fa-solid fa-pen"></i></button>
+                                    <button @click="deleteFormula('dinner', item.id)" class="hover:text-muji-red transition-colors"><i class="fa-solid fa-trash-can"></i></button>
+                                </div>
+                            </div>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex"><span class="w-16 text-muji-light text-xs mt-0.5">蛋白質</span><span>{{ item.protein }}</span></div>
+                                <div class="flex"><span class="w-16 text-muji-light text-xs mt-0.5">蔬菜</span><span>{{ item.veg }}</span></div>
+                                <div class="flex"><span class="w-16 text-muji-light text-xs mt-0.5">碳水</span><span>{{ item.carb }}</span></div>
+                            </div>
+                            <div v-if="item.notes" class="mt-4 pt-3 border-t border-muji-border/60 text-xs text-muji-light flex items-start bg-muji-bg/50 p-2 rounded-lg">
+                                <i class="fa-solid fa-thumbtack mt-0.5 mr-2 text-muji-brown/60"></i><span>{{ item.notes }}</span>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
                 <!-- ================= 頁面 3：指南 ================= -->
@@ -150,6 +205,7 @@
                         <ul class="space-y-3 text-sm leading-relaxed relative z-10">
                             <li class="flex items-start"><span class="text-muji-brown mr-2 mt-0.5"><i class="fa-solid fa-clock"></i></span><span><b>19:5 斷食：</b> 僅在下午 13:00 至 18:00 進食。</span></li>
                             <li class="flex items-start"><span class="text-muji-brown mr-2 mt-0.5"><i class="fa-solid fa-arrow-down-short-wide"></i></span><span><b>進食順序：</b> 蔬菜 $\rightarrow$ 蛋白質 $\rightarrow$ 碳水。</span></li>
+                            <li class="flex items-start"><span class="text-muji-brown mr-2 mt-0.5"><i class="fa-solid fa-person-walking"></i></span><span><b>飯後微活動：</b> 午晚餐後站立 15 分鐘，避免立刻坐下。</span></li>
                         </ul>
                     </div>
                     <div class="bg-muji-card rounded-2xl p-6 shadow-sm border border-muji-border">
@@ -171,9 +227,9 @@
                 <i class="fa-solid fa-pen-to-square text-xl mb-1"></i>
                 <span class="text-[10px] tracking-widest">記錄</span>
             </button>
-            <button @click="currentTab = 'bento'" class="flex flex-col items-center w-1/3 p-1 transition-colors" :class="currentTab === 'bento' ? 'text-muji-green' : 'text-muji-light'">
-                <i class="fa-solid fa-box-open text-xl mb-1"></i>
-                <span class="text-[10px] tracking-widest">便當</span>
+            <button @click="currentTab = 'formula'" class="flex flex-col items-center w-1/3 p-1 transition-colors" :class="currentTab === 'formula' ? 'text-muji-green' : 'text-muji-light'">
+                <i class="fa-solid fa-utensils text-xl mb-1"></i>
+                <span class="text-[10px] tracking-widest">公式</span>
             </button>
             <button @click="currentTab = 'guide'" class="flex flex-col items-center w-1/3 p-1 transition-colors" :class="currentTab === 'guide' ? 'text-muji-green' : 'text-muji-light'">
                 <i class="fa-solid fa-book-open text-xl mb-1"></i>
@@ -181,19 +237,21 @@
             </button>
         </nav>
 
-        <!-- ================= 新增/編輯 便當 Modal ================= -->
+        <!-- ================= 新增/編輯 Modal ================= -->
         <transition name="fade">
             <div v-if="isModalOpen" class="absolute inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-end md:items-center justify-center">
                 <transition name="slide-up" appear>
                     <div class="bg-muji-bg w-full md:w-[90%] rounded-t-3xl md:rounded-3xl p-6 pb-12 md:pb-6 shadow-2xl h-[85%] md:h-auto overflow-y-auto no-scrollbar flex flex-col">
                         <div class="flex justify-between items-center mb-6">
-                            <h2 class="text-xl font-medium">{{ form.id ? '編輯便當' : '新增便當公式' }}</h2>
+                            <h2 class="text-xl font-medium">
+                                {{ form.id ? '編輯' : '新增' }}{{ form.type === 'lunch' ? '午餐便當' : '晚餐公式' }}
+                            </h2>
                             <button @click="closeModal" class="text-muji-light hover:text-muji-text p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
                         </div>
                         
                         <div class="space-y-4 flex-1">
                             <div>
-                                <label class="text-xs text-muji-light block mb-1">便當名稱</label>
+                                <label class="text-xs text-muji-light block mb-1">餐單名稱</label>
                                 <input v-model="form.name" type="text" placeholder="例如：經典高纖雞肉" class="w-full bg-white rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-muji-green/50 border border-muji-border">
                             </div>
                             <div>
@@ -215,7 +273,7 @@
                         </div>
 
                         <div class="mt-6">
-                            <button @click="saveBento" class="w-full bg-muji-green text-white rounded-xl py-3.5 font-medium tracking-wide shadow-md active:scale-95 transition-transform">
+                            <button @click="saveFormula" :class="['w-full text-white rounded-xl py-3.5 font-medium tracking-wide shadow-md active:scale-95 transition-transform', form.type === 'lunch' ? 'bg-muji-green shadow-muji-green/30' : 'bg-muji-brown shadow-muji-brown/30']">
                                 儲存公式
                             </button>
                         </div>
@@ -225,7 +283,7 @@
         </transition>
 
         <!-- Toast 提示 -->
-        <div v-if="toastVisible" class="absolute top-20 left-1/2 transform -translate-x-1/2 bg-muji-text text-white text-sm px-6 py-3 rounded-full shadow-lg z-[60] flex items-center transition-all">
+        <div v-if="toastVisible" class="absolute top-20 left-1/2 transform -translate-x-1/2 bg-muji-text text-white text-sm px-6 py-3 rounded-full shadow-lg z-[60] flex items-center transition-all whitespace-nowrap">
             <i class="fa-solid fa-check-circle text-muji-green mr-2"></i> {{ toastMessage }}
         </div>
 
@@ -237,6 +295,7 @@
         createApp({
             setup() {
                 const currentTab = ref('log');
+                const formulaType = ref('lunch'); // 'lunch' or 'dinner'
                 const days = ['週一', '週二', '週三', '週四', '週五', '週六', '週日'];
                 const selectedDay = ref('週一');
                 const toastVisible = ref(false);
@@ -258,52 +317,55 @@
                 };
                 const records = reactive(initRecords());
 
-                // ================= 便當公式功能 =================
-                const bentoList = reactive([
-                    { id: 1, name: '經典高纖雞肉', protein: '蒜香煎雞胸肉', veg: '西蘭花、椰菜花', carb: '烤番薯 1 條', notes: '微波後口感依然很好，適合週末批量備餐。' },
-                    { id: 2, name: '彩椒牛肉低脂', protein: '蒜片炒瘦牛肉片', veg: '三色椒炒洋蔥', carb: '粟米半條', notes: '彩椒富含維他命C，微波加熱不易變色出水。' },
-                    { id: 3, name: '海鮮豆腐輕盈', protein: '蝦仁炒板豆腐', veg: '翠玉瓜炒蘑菇', carb: '南瓜蒸飯', notes: '豆腐微波後會稍微出水，剛好可以讓便當不那麼乾。' }
-                ]);
+                // ================= 餐單公式數據 (分開午晚) =================
+                const formulas = reactive({
+                    lunch: [
+                        { id: 1, name: '經典高纖雞肉', protein: '蒜香煎雞胸肉', veg: '西蘭花、椰菜花', carb: '烤番薯 1 條', notes: '微波後口感依然很好，適合週末批量備餐。' },
+                        { id: 2, name: '彩椒牛肉低脂', protein: '蒜片炒瘦牛肉片', veg: '三色椒炒洋蔥', carb: '粟米半條', notes: '彩椒富含維他命C，微波加熱不易變色出水。' }
+                    ],
+                    dinner: [
+                        { id: 3, name: '海鮮豆腐輕盈', protein: '蝦仁炒板豆腐', veg: '蒜蓉炒菠菜', carb: '南瓜蒸飯 (半碗)', notes: '晚餐現煮可多吃葉菜類，菠菜豐富鐵質。盡量在 18:00 前吃完。' },
+                        { id: 4, name: '三文魚蘆筍', protein: '香煎三文魚', veg: '清炒蘆筍、蘑菇', carb: '無 (或少量藜麥)', notes: '三文魚提供優質油脂，增加飽足感，夜晚不會餓醒。' }
+                    ]
+                });
 
                 const isModalOpen = ref(false);
-                const form = reactive({ id: null, name: '', protein: '', veg: '', carb: '', notes: '' });
+                const form = reactive({ id: null, type: 'lunch', name: '', protein: '', veg: '', carb: '', notes: '' });
 
-                const openModal = (bento = null) => {
-                    if (bento) {
-                        // 編輯模式
-                        Object.assign(form, bento);
+                const openModal = (type, item = null) => {
+                    if (item) {
+                        Object.assign(form, { ...item, type });
                     } else {
-                        // 新增模式
-                        Object.assign(form, { id: null, name: '', protein: '', veg: '', carb: '', notes: '' });
+                        Object.assign(form, { id: null, type, name: '', protein: '', veg: '', carb: '', notes: '' });
                     }
                     isModalOpen.value = true;
                 };
 
                 const closeModal = () => { isModalOpen.value = false; };
 
-                const saveBento = () => {
+                const saveFormula = () => {
                     if (!form.name || !form.protein) {
-                        alert("請至少填寫便當名稱與蛋白質！");
+                        alert("請至少填寫餐單名稱與蛋白質！");
                         return;
                     }
                     
+                    const list = formulas[form.type];
                     if (form.id) {
-                        // 更新
-                        const index = bentoList.findIndex(b => b.id === form.id);
-                        if (index !== -1) bentoList[index] = { ...form };
-                        showToast('已更新便當公式');
+                        const index = list.findIndex(b => b.id === form.id);
+                        if (index !== -1) list[index] = { ...form };
+                        showToast('已更新公式');
                     } else {
-                        // 新增
-                        bentoList.push({ ...form, id: Date.now() });
-                        showToast('已新增便當公式');
+                        list.push({ ...form, id: Date.now() });
+                        showToast('已新增公式');
                     }
                     closeModal();
                 };
 
-                const deleteBento = (id) => {
-                    if (confirm('確定要刪除這個便當公式嗎？')) {
-                        const index = bentoList.findIndex(b => b.id === id);
-                        if (index !== -1) bentoList.splice(index, 1);
+                const deleteFormula = (type, id) => {
+                    if (confirm('確定要刪除這個餐單公式嗎？')) {
+                        const list = formulas[type];
+                        const index = list.findIndex(b => b.id === id);
+                        if (index !== -1) list.splice(index, 1);
                         showToast('已刪除');
                     }
                 };
@@ -311,7 +373,7 @@
                 // ================= 通用功能 =================
                 const pageTitle = computed(() => {
                     if (currentTab.value === 'log') return '飲食手帳';
-                    if (currentTab.value === 'bento') return '便當公式';
+                    if (currentTab.value === 'formula') return '餐單公式';
                     return '減脂指南';
                 });
 
@@ -322,8 +384,8 @@
                 };
 
                 return {
-                    currentTab, days, selectedDay, foods, mealLabels, records, pageTitle,
-                    bentoList, isModalOpen, form, openModal, closeModal, saveBento, deleteBento,
+                    currentTab, formulaType, days, selectedDay, foods, mealLabels, records, pageTitle,
+                    formulas, isModalOpen, form, openModal, closeModal, saveFormula, deleteFormula,
                     showToast, toastVisible, toastMessage
                 }
             }
