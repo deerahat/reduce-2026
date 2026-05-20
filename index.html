@@ -61,9 +61,7 @@
         <!-- Main Content -->
         <main class="flex-1 overflow-y-auto no-scrollbar px-6 pb-24 relative">
             
-            <transition name="fade" mode="out-in">
-                
-                <!-- ================= 頁面 1：飲食記錄 (含月曆) ================= -->
+            <Transition name="fade" mode="out-in">
                 <div v-if="currentTab === 'log'" key="log" class="space-y-5">
                     
                     <!-- 完整月曆組件 -->
@@ -147,7 +145,7 @@
                     </button>
                 </div>
 
-                <!-- ================= 頁面 2：餐單公式 (CRUD) ================= -->
+                
                 <div v-if="currentTab === 'formula'" key="formula" class="space-y-5">
                     
                     <div class="flex bg-muji-border/50 p-1 rounded-full">
@@ -227,7 +225,7 @@
 
                 </div>
 
-                <!-- ================= 頁面 3：指南 ================= -->
+                
                 <div v-if="currentTab === 'guide'" key="guide" class="space-y-5">
                     <div class="bg-muji-card rounded-2xl p-6 shadow-sm border border-muji-border relative overflow-hidden">
                         <h2 class="text-lg font-medium mb-4 relative z-10">16:8 斷食・久坐族法則</h2>
@@ -247,7 +245,7 @@
                     </div>
                 </div>
 
-            </transition>
+            </Transition>
         </main>
 
         <!-- ================= 底部導航欄 ================= -->
@@ -343,7 +341,14 @@
             };
 
             const selectedDate = ref(formatDateString(today.getFullYear(), today.getMonth(), today.getDate()));
-            const records = reactive({});
+
+            // 【修改這裡】不要用空物件，直接預先塞入今天的空白結構
+            const records = reactive({
+                [selectedDate.value]: {
+                    lunch: { protein: '', veg: '', carb: '' },
+                    dinner: { protein: '', veg: '', carb: '' }
+                }
+            });
 
             // 計算當前月份的第一天是星期幾
             const calendarPadding = computed(() => {
@@ -398,26 +403,25 @@
 
             // ================= 雲端資料同步核心邏輯 =================
             
-            // 從雲端抓取特定日期的紀錄
             const fetchRecordByDate = async (dateStr) => {
+                // 如果該日期在本地還沒有結構，先幫它建立空白結構，防止畫面崩潰
+                if (!records[dateStr]) {
+                    records[dateStr] = {
+                        lunch: { protein: '', veg: '', carb: '' },
+                        dinner: { protein: '', veg: '', carb: '' }
+                    };
+                }
                 try {
                     const { data, error } = await supabase
                         .from('records')
                         .select('*')
                         .eq('date', dateStr)
-                        .maybeSingle(); // 避免 406 錯誤
+                        .maybeSingle();
 
                     if (data) {
-                        records[dateStr] = {
-                            lunch: data.lunch_data || { protein: '', veg: '', carb: '' },
-                            dinner: data.dinner_data || { protein: '', veg: '', carb: '' }
-                        };
-                    } else {
-                        // 雲端無資料，初始化本地
-                        records[dateStr] = { 
-                            lunch: { protein: '', veg: '', carb: '' }, 
-                            dinner: { protein: '', veg: '', carb: '' } 
-                        };
+                        // 有資料時，直接覆蓋內容，這能保持 Vue 的響應式監聽
+                        records[dateStr].lunch = data.lunch_data || { protein: '', veg: '', carb: '' };
+                        records[dateStr].dinner = data.dinner_data || { protein: '', veg: '', carb: '' };
                     }
                 } catch (err) {
                     console.error('抓取雲端紀錄失敗:', err);
@@ -427,8 +431,12 @@
             // 切換日期
             const selectDate = async (dateStr) => {
                 selectedDate.value = dateStr;
-                // 若本地尚未快取此日期，向雲端請求
                 if (!records[dateStr]) {
+                    // 在發出非同步請求的「同時」，立刻建立空白結構，防止切換時畫面閃爍報錯
+                    records[dateStr] = {
+                        lunch: { protein: '', veg: '', carb: '' },
+                        dinner: { protein: '', veg: '', carb: '' }
+                    };
                     await fetchRecordByDate(dateStr);
                 }
             };
