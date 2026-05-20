@@ -185,29 +185,15 @@
                             </div>
                             <!-- 內容列表對齊 -->
                             <div class="space-y-2 text-sm">
-                                <!-- 使用 items-center 確保圖標與文字水平切齊，並用 w-6 給圖標一個固定寬度置中 -->
-                                <div class="flex items-center text-muji-light">
-                                    <span class="w-6 flex justify-center mr-1"><i class="fa-solid fa-egg text-base"></i></span>
-                                    <span class="text-muji-dark">{{ item.protein }}</span>
-                                </div>
-                                <div class="flex items-center text-muji-light">
-                                    <span class="w-6 flex justify-center mr-1"><i class="fa-solid fa-seedling text-base"></i></span>
-                                    <span class="text-muji-dark">{{ item.veg }}</span>
-                                </div>
-                                <div class="flex items-center text-muji-light">
-                                    <!-- 修正了原本程式碼多出來的雙引號 -->
-                                    <span class="w-6 flex justify-center mr-1"><i class="fa-solid fa-bowl-rice text-base"></i></span>
-                                    <span class="text-muji-dark">{{ item.carb }}</span>
-                                </div>
+                                <div class="flex"><span class="w-16 text-muji-light text-xs mt-0.5">蛋白質</span><span>{{ item.protein }}</span></div>
+                                <div class="flex"><span class="w-16 text-muji-light text-xs mt-0.5">蔬菜</span><span>{{ item.veg }}</span></div>
+                                <div class="flex"><span class="w-16 text-muji-light text-xs mt-0.5">碳水</span><span>{{ item.carb }}</span></div>
                             </div>
-    
-                            <!-- 備註欄位對齊 -->
                             <div v-if="item.notes" class="mt-4 pt-3 border-t border-muji-border/60 text-xs text-muji-light flex items-start bg-muji-bg/50 p-2 rounded-lg">
-                                <!-- 用 flex-shrink-0 防止圖標縮小，並與多行文字的第一行完美對齊 -->
-                                <i class="fa-solid fa-thumbtack mt-0.5 mr-2 text-muji-green/60 flex-shrink-0"></i>
-                                <span>{{ item.notes }}</span>
+                                <i class="fa-solid fa-thumbtack mt-0.5 mr-2 text-muji-green/60"></i><span>{{ item.notes }}</span>
                             </div>
                         </div>
+                    </div>
 
                     <!-- 晚餐視圖 -->
                     <div v-if="formulaType === 'dinner'" class="space-y-4">
