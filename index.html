@@ -539,23 +539,36 @@
                 let syncTimeout = null;
                 watch(
                     () => records[selectedDate.value],
-                    (newVal) => {
+                    (newVal, oldVal) => {
                         // 確保資料存在且目前不是正在初次載入
                         if (!newVal || isSyncing.value) return;
+
+                        // 【核心修正 1】區分是「切換日期」還是「修改內容」
+                        // 在 deep: true 下，如果是內容修改，newVal 和 oldVal 會指向同一個物件引用
+                        // 如果是選中日期變了，getter 會回傳全新日期的物件，此時 newVal !== oldVal
+                        const isDateChanged = oldVal && newVal !== oldVal;
+        
+                        if (isDateChanged) {
+                            // 如果只是換日期，直接結束，不觸發自動存檔（避免白打 API）
+                            // 備註：如果你希望切換日期時「強迫儲存舊日期的未完成輸入」，可以在這裡執行 Flush 邏輯
+                            return;
+                        }
 
                         // 每次資料變更，清除前一個定時器，避免頻繁打 API
                         if (syncTimeout) clearTimeout(syncTimeout);
 
-                        syncTimeout = setTimeout(async () => {
-                            const dateToSync = selectedDate.value;
-                            const currentRecord = records[dateToSync];
+                        // 【核心修正 2】立即鎖定當前修改的日期與資料快照
+                        // 確保 1 秒後非同步執行時，資料不會因為使用者切換日期而錯亂
+                        const dateToSync = selectedDate.value;
+                        const recordSnapshot = JSON.parse(JSON.stringify(newVal)); // 深度複製一份當下的資料
 
+                        syncTimeout = setTimeout(async () => {
                             try {
                                 // 使用 upsert：若主鍵 date 存在就覆蓋，不存在就新增
                                 const { error } = await supabase.from('diet_records').upsert({
                                     date: dateToSync,
-                                    lunch: currentRecord.lunch,
-                                    dinner: currentRecord.dinner,
+                                    lunch: recordSnapshot.lunch,
+                                    dinner: recordSnapshot.dinner,
                                     updated_at: new Date().toISOString()
                                 });
                                 if (error) throw error;
@@ -582,5 +595,5 @@
             }
         }).mount('#app');
     </script>
-    </body>
-    </html>
+</body>
+</html>
