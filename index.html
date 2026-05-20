@@ -320,11 +320,12 @@
         </transition>
 
         <!-- Toast 提示 -->
-    <div v-if="toastVisible" class="fixed top-20 left-1/2 -translate-x-1/2 bg-muji-text/90 text-white text-xs px-4 py-2.5 rounded-full z-50 shadow-lg tracking-wide flex items-center gap-2 backdrop-blur-sm">
-        <i class="fa-solid fa-circle-check text-muji-green"></i>
+    <Transition name="fade">
+         <div v-if="toastVisible" class="fixed top-20 left-1/2 -translate-x-1/2 bg-muji-text/90 text-white text-xs px-4 py-2.5 rounded-full z-50 shadow-lg tracking-wide flex items-center gap-2 backdrop-blur-sm">
+            <i class="fa-solid fa-circle-check text-muji-green"></i>
         {{ toastMessage }}
-    </div>
-
+        </div>
+    </Transition>
     </div>
 
     <script>
