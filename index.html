@@ -7,8 +7,6 @@
     
     <!-- Vue 3 -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <!-- 加入這行 Supabase 的 CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
@@ -323,119 +321,166 @@
         const { createApp, ref, reactive, computed, onMounted } = Vue;
 
         createApp({
-        setup() {
-            // 1. 初始化 Supabase (請替換為你的真實 URL 和 Key)
-            const supabaseUrl = 'https://ewmxkxxjkqlndgjuntxc.supabase.co';
-            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV3bXhreHhqa3FsbmRnanVudHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyNDMzNzYsImV4cCI6MjA5NDgxOTM3Nn0.L_tNk11BsvOqkebr53X85mSpJB_5LedOpmz0fg1kgz8';
-            const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+            setup() {
+                const currentTab = ref('log');
+                const formulaType = ref('lunch');
+                const toastVisible = ref(false);
+                const toastMessage = ref('');
 
-            // 原本的變數保留...
-            const currentTab = ref('log');
-            //
+                // ================= 2026年動態動態動態動態月曆核心 =================
+                const today = new Date();
+                const currentYear = ref(today.getFullYear());
+                const currentMonth = ref(today.getMonth()); // 0-11 代表 1-12月
+                
+                const formatDateString = (y, m, d) => {
+                    return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                };
 
-            // 2. 將 formulas 預設為空，等待從資料庫載入
-            const formulas = reactive({ lunch: [], dinner: [] });
-            const records = reactive({});
+                const selectedDate = ref(formatDateString(today.getFullYear(), today.getMonth(), today.getDate()));
+                const records = reactive({});
 
-            // 3. 新增：從資料庫載入資料的函數
-            const loadData = async () => {
-                // 載入公式
-                const { data: formulaData } = await supabaseClient.from('meal_formulas').select('*');
-                if (formulaData) {
-                    formulas.lunch = formulaData.filter(f => f.type === 'lunch');
-                    formulas.dinner = formulaData.filter(f => f.type === 'dinner');
-                }
+                // 計算當前月份的第一天是星期幾（用於網格前面留白）
+                const calendarPadding = computed(() => {
+                    const firstDay = new Date(currentYear.value, currentMonth.value, 1).getDay();
+                    return firstDay; // 返回 0 (週日) 到 6 (週六)，剛好作為循環填空次數
+                });
 
-                // 載入當前選中日期的紀錄
-                const { data: recordData } = await supabaseClient
-                    .from('diet_records')
-                    .select('*')
-                    .eq('date', selectedDate.value)
-                    .single();
-            
-                if (recordData) {
-                    records[selectedDate.value] = { lunch: recordData.lunch, dinner: recordData.dinner };
-                } else {
-                    // 如果雲端沒有，初始化空的
-                    records[selectedDate.value] = { 
-                        lunch: { protein: '', veg: '', carb: '' }, 
-                        dinner: { protein: '', veg: '', carb: '' } 
-                    };
-                }
-            };
+                // 計算當前月份共有多少天
+                const calendarDays = computed(() => {
+                    const days = [];
+                    const totalDays = new Date(currentYear.value, currentMonth.value + 1, 0).getDate();
+                    
+                    for (let i = 1; i <= totalDays; i++) {
+                        const dateStr = formatDateString(currentYear.value, currentMonth.value, i);
+                        const isToday = today.getFullYear() === currentYear.value && 
+                                        today.getMonth() === currentMonth.value && 
+                                        today.getDate() === i;
+                        days.push({
+                            dayNum: i,
+                            fullDate: dateStr,
+                            isToday: isToday
+                        });
+                    }
+                    return days;
+                });
 
-            // 4. 改寫：儲存紀錄到資料庫的函數 (當使用者修改飲食紀錄時呼叫)
-            const saveDailyRecord = async (dateStr) => {
-                const record = records[dateStr];
-                if (!record) return;
+                // 格式化頂部顯示的完整選中日期資訊
+                const formattedSelectedDate = computed(() => {
+                    const parts = selectedDate.value.split('-');
+                    const d = new Date(parts[0], parts[1] - 1, parts[2]);
+                    const dayNames = ['週日', '週一', '週二', '週三', '週四', '週五', '週六'];
+                    return `${parts[0]}年${parseInt(parts[1])}月${parseInt(parts[2])}日 ${dayNames[d.getDay()]}`;
+                });
 
-                const { error } = await supabaseClient
-                    .from('diet_records')
-                    .upsert({ 
-                        date: dateStr, 
-                        lunch: record.lunch, 
-                        dinner: record.dinner 
-                    });
-            
-                if (error) console.error("儲存紀錄失敗", error);
-                else showToast('已同步至雲端');
-            };
-
-            // 5. 改寫：儲存與刪除公式的邏輯
-            const saveFormula = async () => {
-                if (!form.name || !form.protein) {
-                    alert("請至少填寫餐單名稱與蛋白質！");
-                    return;
-                }
-        
-                const isNew = !form.id;
-                const saveId = isNew ? Date.now() : form.id;
-                const payload = { ...form, id: saveId };
-
-                // 寫入 Supabase
-                const { error } = await supabaseClient.from('meal_formulas').upsert(payload);
-        
-                if (!error) {
-                    const list = formulas[form.type];
-                    if (isNew) {
-                        list.push(payload);
-                        showToast('已新增公式並同步');
+                const prevMonth = () => {
+                    if (currentMonth.value === 0) {
+                        currentMonth.value = 11;
+                        currentYear.value--;
                     } else {
+                        currentMonth.value--;
+                    }
+                };
+
+                const nextMonth = () => {
+                    if (currentMonth.value === 11) {
+                        currentMonth.value = 0;
+                        currentYear.value++;
+                    } else {
+                        currentMonth.value++;
+                    }
+                };
+
+                const selectDate = (dateStr) => {
+                    // 若該日期無紀錄結構，自動進行初始化
+                    if (!records[dateStr]) {
+                        records[dateStr] = { 
+                            lunch: { protein: '', veg: '', carb: '' }, 
+                            dinner: { protein: '', veg: '', carb: '' } 
+                        };
+                    }
+                    selectedDate.value = dateStr;
+                };
+
+                // 頁面初始化：載入今天的紀錄
+                selectDate(selectedDate.value);
+
+                // ================= 基礎食物庫 =================
+                const foods = {
+                    protein: ['無', '高蛋白小食 (如希臘乳酪)', '煎雞胸肉', '去皮雞腿肉', '水煮蛋/茶葉蛋', '豆腐/豆漿', '清蒸魚柳/三文魚', '瘦牛肉/牛腱', '蝦仁'],
+                    veg: ['無', '西蘭花', '椰菜花', '菠菜/小白菜', '翠玉瓜', '三色椒', '各式菇類', '番茄/青瓜', '綜合生菜'],
+                    carb: ['無', '烤番薯 (半個)', '糙米飯 (半碗)', '南瓜', '粟米', '燕麥', '蕎麥麵', '全麥麵包']
+                };
+                const mealLabels = { protein: '蛋白質 (1/4)', veg: '蔬菜 (1/2)', carb: '優質碳水 (適量)' };
+
+                // ================= 餐單公式數據 =================
+                const formulas = reactive({
+                    lunch: [
+                        { id: 1, name: '經典高纖雞肉', protein: '蒜香煎雞胸肉', veg: '西蘭花、椰菜花', carb: '烤番薯 1 條', notes: '微波後口感依然很好，適合週末批量備餐。' },
+                        { id: 2, name: '彩椒牛肉低脂', protein: '蒜片炒瘦牛肉片', veg: '三色椒炒洋蔥', carb: '粟米半條', notes: '彩椒富含維他命C，微波加熱不易變色出水。' }
+                    ],
+                    dinner: [
+                        { id: 3, name: '海鮮豆腐輕盈', protein: '蝦仁炒板豆腐', veg: '蒜蓉炒菠菜', carb: '南瓜蒸飯 (半碗)', notes: '晚餐現煮可多吃葉菜類，菠菜豐富鐵質。盡量在 20:00 前吃完。' },
+                        { id: 4, name: '三文魚蘆筍', protein: '香煎三文魚', veg: '清炒蘆筍、蘑菇', carb: '無 (或少量藜麥)', notes: '三文魚提供優質油脂，增加飽足感，夜晚不會餓醒。' }
+                    ]
+                });
+
+                const isModalOpen = ref(false);
+                const form = reactive({ id: null, type: 'lunch', name: '', protein: '', veg: '', carb: '', notes: '' });
+
+                const openModal = (type, item = null) => {
+                    if (item) Object.assign(form, { ...item, type });
+                    else Object.assign(form, { id: null, type, name: '', protein: '', veg: '', carb: '', notes: '' });
+                    isModalOpen.value = true;
+                };
+
+                const closeModal = () => { isModalOpen.value = false; };
+
+                const saveFormula = () => {
+                    if (!form.name || !form.protein) {
+                        alert("請至少填寫餐單名稱與蛋白質！");
+                        return;
+                    }
+                    const list = formulas[form.type];
+                    if (form.id) {
                         const index = list.findIndex(b => b.id === form.id);
-                        if (index !== -1) list[index] = payload;
-                        showToast('已更新公式並同步');
+                        if (index !== -1) list[index] = { ...form };
+                        showToast('已更新公式');
+                    } else {
+                        list.push({ ...form, id: Date.now() });
+                        showToast('已新增公式');
                     }
                     closeModal();
-                }
-            };
+                };
 
-            const deleteFormula = async (type, id) => {
-                if (confirm('確定要刪除這個餐單公式嗎？')) {
-                    // 從 Supabase 刪除
-                    const { error } = await supabaseClient.from('meal_formulas').delete().eq('id', id);
-            
-                    if (!error) {
+                const deleteFormula = (type, id) => {
+                    if (confirm('確定要刪除這個餐單公式嗎？')) {
                         const list = formulas[type];
                         const index = list.findIndex(b => b.id === id);
                         if (index !== -1) list.splice(index, 1);
-                        showToast('已刪除並同步');
+                        showToast('已刪除');
                     }
+                };
+
+                const pageTitle = computed(() => {
+                    if (currentTab.value === 'log') return '飲食手帳';
+                    if (currentTab.value === 'formula') return '餐單公式';
+                    return '減脂指南';
+                });
+
+                const showToast = (msg) => {
+                    toastMessage.value = msg;
+                    toastVisible.value = true;
+                    setTimeout(() => { toastVisible.value = false; }, 2000);
+                };
+
+                return {
+                    currentTab, formulaType, foods, mealLabels, pageTitle,
+                    currentYear, currentMonth, calendarPadding, calendarDays, selectedDate, formattedSelectedDate, prevMonth, nextMonth, selectDate, records,
+                    formulas, isModalOpen, form, openModal, closeModal, saveFormula, deleteFormula,
+                    showToast, toastVisible, toastMessage
                 }
-            };
-
-            // 在 selectDate 時載入該日資料
-            const selectDate = async (dateStr) => {
-                selectedDate.value = dateStr;
-                await loadData();
-            };
-
-            // 元件掛載時執行初始載入
-            onMounted(() => {
-                selectDate(selectedDate.value);
-            });
-
-            // ...回傳變數 (return { ... })
-        }
+            }
+        }).mount('#app');
     </script>
 </body>
 </html>
