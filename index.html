@@ -106,7 +106,7 @@
                         {{ formattedSelectedDate }}
                     </div>
 
-                    <!-- 午餐記錄 (12:00) -->
+                    <!-- 午餐記錄 (13:00) -->
                     <div class="bg-muji-card rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] border border-muji-border">
                         <div class="flex items-center mb-4">
                             <i class="fa-solid fa-sun text-muji-brown mr-2"></i>
@@ -115,10 +115,12 @@
                         <div class="space-y-3">
                             <div v-for="(label, key) in mealLabels" :key="key">
                                 <label class="text-xs text-muji-green font-medium mb-1 block">{{ label }}</label>
-                                <select v-model="records[selectedDate].lunch[key]" class="w-full bg-muji-bg rounded-xl px-4 py-2.5 text-sm appearance-none outline-none focus:ring-2 focus:ring-muji-green/50">
-                                    <option value="" disabled>請選擇...</option>
-                                    <option v-for="item in foods[key]" :value="item">{{ item }}</option>
-                                </select>
+                                <input 
+                                    type="text" 
+                                    v-model="records[selectedDate].lunch[key]" 
+                                    :placeholder="'請輸入' + label.split(' ')[0] + '...'"
+                                    class="w-full bg-muji-bg rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-muji-green/50 placeholder:text-muji-light/60 text-muji-text border border-transparent focus:bg-white transition-all"
+                                />
                             </div>
                         </div>
                     </div>
@@ -132,10 +134,12 @@
                         <div class="space-y-3">
                             <div v-for="(label, key) in mealLabels" :key="key">
                                 <label class="text-xs text-muji-green font-medium mb-1 block">{{ label }}</label>
-                                <select v-model="records[selectedDate].dinner[key]" class="w-full bg-muji-bg rounded-xl px-4 py-2.5 text-sm appearance-none outline-none focus:ring-2 focus:ring-muji-green/50">
-                                    <option value="" disabled>請選擇...</option>
-                                    <option v-for="item in foods[key]" :value="item">{{ item }}</option>
-                                </select>
+                                <input 
+                                    type="text" 
+                                    v-model="records[selectedDate].dinner[key]" 
+                                    :placeholder="'請輸入' + label.split(' ')[0] + '...'"
+                                    class="w-full bg-muji-bg rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-muji-green/50 placeholder:text-muji-light/60 text-muji-text border border-transparent focus:bg-white transition-all"
+                                />
                             </div>
                         </div>
                     </div>
@@ -331,7 +335,7 @@
             const toastVisible = ref(false);
             const toastMessage = ref('');
 
-            // ================= 2026年動態月曆核心 =================
+            // ================= 動態月曆核心 =================
             const today = new Date();
             const currentYear = ref(today.getFullYear());
             const currentMonth = ref(today.getMonth()); // 0-11 代表 1-12月
@@ -341,8 +345,8 @@
             };
 
             const selectedDate = ref(formatDateString(today.getFullYear(), today.getMonth(), today.getDate()));
-
-            // 【修改這裡】不要用空物件，直接預先塞入今天的空白結構
+            
+            // 安全防崩潰：初始化時，立即塞入今日的空白結構，確保 HTML 加載時不會噴 undefined 錯誤
             const records = reactive({
                 [selectedDate.value]: {
                     lunch: { protein: '', veg: '', carb: '' },
@@ -397,14 +401,15 @@
                     currentMonth.value = 0;
                     currentYear.value++;
                 } else {
-                    currentMonth.value++;
+                    currentMonth.value--;
                 }
             };
 
             // ================= 雲端資料同步核心邏輯 =================
             
+            // 從雲端抓取特定日期的紀錄
             const fetchRecordByDate = async (dateStr) => {
-                // 如果該日期在本地還沒有結構，先幫它建立空白結構，防止畫面崩潰
+                // 發起請求前，如果該日期在本地還沒有結構，先幫它建立空白結構，防止畫面崩潰
                 if (!records[dateStr]) {
                     records[dateStr] = {
                         lunch: { protein: '', veg: '', carb: '' },
@@ -416,10 +421,10 @@
                         .from('records')
                         .select('*')
                         .eq('date', dateStr)
-                        .maybeSingle();
+                        .maybeSingle(); // 避免 406 錯誤
 
                     if (data) {
-                        // 有資料時，直接覆蓋內容，這能保持 Vue 的響應式監聽
+                        // 有雲端資料則精確覆蓋
                         records[dateStr].lunch = data.lunch_data || { protein: '', veg: '', carb: '' };
                         records[dateStr].dinner = data.dinner_data || { protein: '', veg: '', carb: '' };
                     }
@@ -431,8 +436,8 @@
             // 切換日期
             const selectDate = async (dateStr) => {
                 selectedDate.value = dateStr;
-                if (!records[dateStr]) {
-                    // 在發出非同步請求的「同時」，立刻建立空白結構，防止切換時畫面閃爍報錯
+                // 若本地尚未快取此日期，立刻賦予空白結構並同時向雲端請求
+                if (!records[dateStr] || (records[dateStr].lunch.protein === '' && records[dateStr].lunch.veg === '' && records[dateStr].lunch.carb === '')) {
                     records[dateStr] = {
                         lunch: { protein: '', veg: '', carb: '' },
                         dinner: { protein: '', veg: '', carb: '' }
@@ -461,7 +466,7 @@
                 }
             };
 
-            // 生命週期掛載：網格載入時執行初始化
+            // 生命週期掛載：初始化執行
             onMounted(async () => {
                 // 1. 載入雲端餐單公式
                 const { data: formulaData, error: formulaError } = await supabase
@@ -479,15 +484,10 @@
                 await fetchRecordByDate(selectedDate.value);
             });
 
-            // ================= 基礎食物庫 =================
-            const foods = {
-                protein: ['無', '高蛋白小食 (如希臘乳酪)', '煎雞胸肉', '去皮雞腿肉', '水煮蛋/茶葉蛋', '豆腐/豆漿', '清蒸魚柳/三文魚', '瘦牛肉/牛腱', '蝦仁'],
-                veg: ['無', '西蘭花', '椰菜花', '菠菜/小白菜', '翠玉瓜', '三色椒', '各式菇類', '番茄/青瓜', '綜合生菜'],
-                carb: ['無', '烤番薯 (半個)', '糙米飯 (半碗)', '南瓜', '粟米', '燕麥', '蕎麥麵', '全麥麵包']
-            };
+            // 欄位標籤配置
             const mealLabels = { protein: '蛋白質 (1/4)', veg: '蔬菜 (1/2)', carb: '優質碳水 (適量)' };
 
-            // ================= 餐單公式數據 (預設為空，等待雲端載入) =================
+            // ================= 餐單公式數據 =================
             const formulas = reactive({
                 lunch: [],
                 dinner: []
@@ -585,7 +585,7 @@
             };
 
             return {
-                currentTab, formulaType, foods, mealLabels, pageTitle,
+                currentTab, formulaType, mealLabels, pageTitle,
                 currentYear, currentMonth, calendarPadding, calendarDays, selectedDate, formattedSelectedDate, prevMonth, nextMonth, selectDate, records,
                 formulas, isModalOpen, form, openModal, closeModal, saveFormula, deleteFormula, saveRecord,
                 showToast, toastVisible, toastMessage
