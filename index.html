@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>日系極簡・減脂飲食手帳</title>
+    <title>減脂飲食手帳</title>
     
     <!-- Vue 3 -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome for App Icons -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Noto Sans TC for clean Japanese/Traditional Chinese typography -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <!-- Tailwind 顏色配置 -->
@@ -20,13 +20,14 @@
             theme: {
                 extend: {
                     colors: {
-                        'muji-bg': '#F9F8F6',      // 燕麥白背景
-                        'muji-card': '#FFFFFF',    // 純白卡片
-                        'muji-text': '#4A4A4A',    // 深灰文字 (非純黑)
-                        'muji-light': '#9CA3AF',   // 淺灰副標題
-                        'muji-green': '#8A9A86',   // 抹茶綠點綴
-                        'muji-brown': '#A68A6D',   // 大地棕色
-                        'muji-border': '#EAE8E3'   // 柔和邊框
+                        'muji-bg': '#F9F8F6',
+                        'muji-card': '#FFFFFF',
+                        'muji-text': '#4A4A4A',
+                        'muji-light': '#9CA3AF',
+                        'muji-green': '#8A9A86',
+                        'muji-brown': '#A68A6D',
+                        'muji-border': '#EAE8E3',
+                        'muji-red': '#D48A8A'
                     },
                     fontFamily: {
                         sans: ['"Noto Sans TC"', 'sans-serif'],
@@ -38,32 +39,31 @@
 
     <style>
         body { background-color: #E5E5E5; }
-        /* 隱藏滾動條但保留滾動功能，增加 App 沉浸感 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        /* 淡入動畫 */
         .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
         .fade-enter-from, .fade-leave-to { opacity: 0; }
+        .slide-up-enter-active, .slide-up-leave-active { transition: transform 0.3s ease, opacity 0.3s ease; }
+        .slide-up-enter-from, .slide-up-leave-to { transform: translateY(20px); opacity: 0; }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen">
 
-    <!-- 模擬手機 App 容器 -->
     <div id="app" class="w-full max-w-md h-[100dvh] md:h-[850px] bg-muji-bg text-muji-text relative flex flex-col shadow-2xl md:rounded-[2.5rem] overflow-hidden md:border-8 md:border-white">
         
         <!-- App Header -->
-        <header class="pt-12 pb-4 px-6 bg-muji-bg/80 backdrop-blur-md z-10 sticky top-0">
+        <header class="pt-12 pb-4 px-6 bg-muji-bg/90 backdrop-blur-md z-10 sticky top-0">
             <h1 class="text-2xl font-medium tracking-widest text-center">{{ pageTitle }}</h1>
             <p class="text-xs text-muji-light text-center mt-1 tracking-wider">19:5 斷食計劃 • 久坐族專屬</p>
         </header>
 
-        <!-- Main Content (Scrollable) -->
-        <main class="flex-1 overflow-y-auto no-scrollbar px-6 pb-24">
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto no-scrollbar px-6 pb-24 relative">
             
             <transition name="fade" mode="out-in">
-                <!-- 頁面 1：飲食記錄 (Daily Log) -->
+                
+                <!-- ================= 頁面 1：飲食記錄 ================= -->
                 <div v-if="currentTab === 'log'" key="log" class="space-y-6">
-                    
                     <!-- 星期選擇 -->
                     <div class="flex space-x-3 overflow-x-auto no-scrollbar py-2">
                         <button v-for="day in days" :key="day" 
@@ -74,114 +74,90 @@
                         </button>
                     </div>
 
-                    <!-- 午餐記錄 (13:00) -->
+                    <!-- 午餐記錄 -->
                     <div class="bg-muji-card rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] border border-muji-border">
                         <div class="flex items-center mb-4">
                             <i class="fa-solid fa-sun text-muji-brown mr-2"></i>
                             <h2 class="text-lg font-medium">午餐 <span class="text-sm text-muji-light ml-1">13:00</span></h2>
                         </div>
                         <div class="space-y-3">
-                            <div>
-                                <label class="text-xs text-muji-green font-medium mb-1 block">蛋白質 (1/4)</label>
-                                <select v-model="records[selectedDay].lunch.protein" class="w-full bg-muji-bg rounded-xl px-4 py-2.5 text-sm appearance-none outline-none focus:ring-2 focus:ring-muji-green/50">
-                                    <option value="" disabled>選擇蛋白質...</option>
-                                    <option v-for="item in foods.protein" :value="item">{{ item }}</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="text-xs text-muji-green font-medium mb-1 block">蔬菜 (1/2)</label>
-                                <select v-model="records[selectedDay].lunch.veg" class="w-full bg-muji-bg rounded-xl px-4 py-2.5 text-sm appearance-none outline-none focus:ring-2 focus:ring-muji-green/50">
-                                    <option value="" disabled>選擇蔬菜...</option>
-                                    <option v-for="item in foods.veg" :value="item">{{ item }}</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="text-xs text-muji-green font-medium mb-1 block">優質碳水 (1/4)</label>
-                                <select v-model="records[selectedDay].lunch.carb" class="w-full bg-muji-bg rounded-xl px-4 py-2.5 text-sm appearance-none outline-none focus:ring-2 focus:ring-muji-green/50">
-                                    <option value="" disabled>選擇碳水...</option>
-                                    <option v-for="item in foods.carb" :value="item">{{ item }}</option>
+                            <div v-for="(label, key) in mealLabels" :key="key">
+                                <label class="text-xs text-muji-green font-medium mb-1 block">{{ label }}</label>
+                                <select v-model="records[selectedDay].lunch[key]" class="w-full bg-muji-bg rounded-xl px-4 py-2.5 text-sm appearance-none outline-none focus:ring-2 focus:ring-muji-green/50">
+                                    <option value="" disabled>請選擇...</option>
+                                    <option v-for="item in foods[key]" :value="item">{{ item }}</option>
                                 </select>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 晚餐記錄 (18:00) -->
+                    <!-- 晚餐記錄 -->
                     <div class="bg-muji-card rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] border border-muji-border">
                         <div class="flex items-center mb-4">
                             <i class="fa-solid fa-moon text-muji-brown mr-2"></i>
                             <h2 class="text-lg font-medium">晚餐 <span class="text-sm text-muji-light ml-1">18:00</span></h2>
                         </div>
                         <div class="space-y-3">
-                            <div>
-                                <label class="text-xs text-muji-green font-medium mb-1 block">蛋白質 (1/4)</label>
-                                <select v-model="records[selectedDay].dinner.protein" class="w-full bg-muji-bg rounded-xl px-4 py-2.5 text-sm appearance-none outline-none focus:ring-2 focus:ring-muji-green/50">
-                                    <option value="" disabled>選擇蛋白質...</option>
-                                    <option v-for="item in foods.protein" :value="item">{{ item }}</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="text-xs text-muji-green font-medium mb-1 block">蔬菜 (1/2)</label>
-                                <select v-model="records[selectedDay].dinner.veg" class="w-full bg-muji-bg rounded-xl px-4 py-2.5 text-sm appearance-none outline-none focus:ring-2 focus:ring-muji-green/50">
-                                    <option value="" disabled>選擇蔬菜...</option>
-                                    <option v-for="item in foods.veg" :value="item">{{ item }}</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="text-xs text-muji-green font-medium mb-1 block">優質碳水 (1/4)</label>
-                                <select v-model="records[selectedDay].dinner.carb" class="w-full bg-muji-bg rounded-xl px-4 py-2.5 text-sm appearance-none outline-none focus:ring-2 focus:ring-muji-green/50">
-                                    <option value="" disabled>選擇碳水 (晚餐可減量)...</option>
-                                    <option v-for="item in foods.carb" :value="item">{{ item }}</option>
+                            <div v-for="(label, key) in mealLabels" :key="key">
+                                <label class="text-xs text-muji-green font-medium mb-1 block">{{ label }}</label>
+                                <select v-model="records[selectedDay].dinner[key]" class="w-full bg-muji-bg rounded-xl px-4 py-2.5 text-sm appearance-none outline-none focus:ring-2 focus:ring-muji-green/50">
+                                    <option value="" disabled>請選擇...</option>
+                                    <option v-for="item in foods[key]" :value="item">{{ item }}</option>
                                 </select>
                             </div>
                         </div>
                     </div>
                     
-                    <button @click="showToast" class="w-full bg-muji-green text-white rounded-xl py-3.5 font-medium tracking-wide shadow-md shadow-muji-green/30 active:scale-95 transition-transform">
-                        保存本日記錄
+                    <button @click="showToast('已儲存本日記錄')" class="w-full bg-muji-green text-white rounded-xl py-3.5 font-medium tracking-wide shadow-md shadow-muji-green/30 active:scale-95 transition-transform">
+                        保存記錄
                     </button>
                 </div>
 
-                <!-- 頁面 2：減脂貼士 & 外食建議 (Guide) -->
-                <div v-if="currentTab === 'guide'" key="guide" class="space-y-5">
+                <!-- ================= 頁面 2：便當公式 (CRUD) ================= -->
+                <div v-if="currentTab === 'bento'" key="bento" class="space-y-5">
                     
-                    <!-- 核心法則 -->
+                    <button @click="openModal()" class="w-full border-2 border-dashed border-muji-green/50 text-muji-green rounded-2xl py-4 flex flex-col items-center justify-center hover:bg-muji-green/10 transition-colors">
+                        <i class="fa-solid fa-plus text-xl mb-1"></i>
+                        <span class="text-sm font-medium">新增便當公式</span>
+                    </button>
+
+                    <!-- 便當列表 -->
+                    <div v-for="bento in bentoList" :key="bento.id" class="bg-muji-card rounded-2xl p-5 shadow-sm border border-muji-border relative">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-medium text-lg text-muji-brown"><i class="fa-solid fa-box-archive mr-2 text-sm"></i>{{ bento.name }}</h3>
+                            <div class="space-x-3 text-muji-light">
+                                <button @click="openModal(bento)" class="hover:text-muji-green transition-colors"><i class="fa-solid fa-pen"></i></button>
+                                <button @click="deleteBento(bento.id)" class="hover:text-muji-red transition-colors"><i class="fa-solid fa-trash-can"></i></button>
+                            </div>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex"><span class="w-16 text-muji-light text-xs mt-0.5">蛋白質</span><span>{{ bento.protein }}</span></div>
+                            <div class="flex"><span class="w-16 text-muji-light text-xs mt-0.5">蔬菜</span><span>{{ bento.veg }}</span></div>
+                            <div class="flex"><span class="w-16 text-muji-light text-xs mt-0.5">碳水</span><span>{{ bento.carb }}</span></div>
+                        </div>
+                        <!-- 備註區塊 -->
+                        <div v-if="bento.notes" class="mt-4 pt-3 border-t border-muji-border/60 text-xs text-muji-light flex items-start bg-muji-bg/50 p-2 rounded-lg">
+                            <i class="fa-solid fa-thumbtack mt-0.5 mr-2 text-muji-brown/60"></i>
+                            <span>{{ bento.notes }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= 頁面 3：指南 ================= -->
+                <div v-if="currentTab === 'guide'" key="guide" class="space-y-5">
                     <div class="bg-muji-card rounded-2xl p-6 shadow-sm border border-muji-border relative overflow-hidden">
-                        <div class="absolute -right-4 -top-4 text-muji-bg opacity-50 text-7xl"><i class="fa-solid fa-leaf"></i></div>
                         <h2 class="text-lg font-medium mb-4 relative z-10">久坐族減脂法則</h2>
-                        <ul class="space-y-3 text-sm leading-relaxed text-muji-text relative z-10">
-                            <li class="flex items-start">
-                                <span class="text-muji-brown mr-2 mt-0.5"><i class="fa-solid fa-clock"></i></span>
-                                <span><b>19:5 斷食：</b> 僅在下午 13:00 至 18:00 進食，其餘時間只喝水、黑咖啡或無糖茶。</span>
-                            </li>
-                            <li class="flex items-start">
-                                <span class="text-muji-brown mr-2 mt-0.5"><i class="fa-solid fa-arrow-down-short-wide"></i></span>
-                                <span><b>進食順序：</b> 蔬菜先吃 $\rightarrow$ 蛋白質 $\rightarrow$ 碳水化合物。穩定血糖不囤脂。</span>
-                            </li>
-                            <li class="flex items-start">
-                                <span class="text-muji-brown mr-2 mt-0.5"><i class="fa-solid fa-person-walking"></i></span>
-                                <span><b>飯後微活動：</b> 午晚餐後站立 15 分鐘，避免立刻坐下，減少腹部脂肪囤積。</span>
-                            </li>
+                        <ul class="space-y-3 text-sm leading-relaxed relative z-10">
+                            <li class="flex items-start"><span class="text-muji-brown mr-2 mt-0.5"><i class="fa-solid fa-clock"></i></span><span><b>19:5 斷食：</b> 僅在下午 13:00 至 18:00 進食。</span></li>
+                            <li class="flex items-start"><span class="text-muji-brown mr-2 mt-0.5"><i class="fa-solid fa-arrow-down-short-wide"></i></span><span><b>進食順序：</b> 蔬菜 $\rightarrow$ 蛋白質 $\rightarrow$ 碳水。</span></li>
                         </ul>
                     </div>
-
-                    <!-- 外食指南 -->
                     <div class="bg-muji-card rounded-2xl p-6 shadow-sm border border-muji-border">
-                        <h2 class="text-lg font-medium mb-4 flex items-center">
-                            外食應急指南 <i class="fa-solid fa-utensils text-muji-light ml-2 text-sm"></i>
-                        </h2>
+                        <h2 class="text-lg font-medium mb-4 flex items-center">外食應急指南 <i class="fa-solid fa-utensils text-muji-light ml-2 text-sm"></i></h2>
                         <div class="space-y-4 text-sm">
-                            <div class="pb-3 border-b border-muji-border/50">
-                                <p class="font-medium text-muji-green mb-1">🍜 湯粉麵類 (如米線)</p>
-                                <p class="text-muji-light">選擇清湯底，走甜/走肉碎，蛋白質選雞肉/魚蛋，<span class="text-red-400 font-medium">絕對不喝湯</span>（隱藏鹽分極高）。</p>
-                            </div>
-                            <div class="pb-3 border-b border-muji-border/50">
-                                <p class="font-medium text-muji-green mb-1">🍣 壽司/日本料理</p>
-                                <p class="text-muji-light">避開炸物（天婦羅）及沙律醬，選擇刺身、手卷、茶碗蒸及鹽烤魚。</p>
-                            </div>
-                            <div>
-                                <p class="font-medium text-muji-green mb-1">🍽️ 茶餐廳/冰室</p>
-                                <p class="text-muji-light">碟頭飯「走汁、少飯」，多加一碟「走油」的白灼菜。飲品轉熱檸水/茶（走甜）。</p>
-                            </div>
+                            <div class="pb-3 border-b border-muji-border/50"><p class="font-medium text-muji-green mb-1">🍜 湯粉麵類 (如米線)</p><p class="text-muji-light">清湯底，走甜走肉碎，蛋白質選雞肉，不喝湯。</p></div>
+                            <div class="pb-3 border-b border-muji-border/50"><p class="font-medium text-muji-green mb-1">🍣 壽司/日本料理</p><p class="text-muji-light">避開炸物及沙律醬，選擇刺身、茶碗蒸及烤魚。</p></div>
+                            <div><p class="font-medium text-muji-green mb-1">🍽️ 茶餐廳/冰室</p><p class="text-muji-light">碟頭飯「走汁少飯」，加「走油」白灼菜，飲品走甜。</p></div>
                         </div>
                     </div>
                 </div>
@@ -189,21 +165,68 @@
             </transition>
         </main>
 
-        <!-- 底部導航欄 (Bottom Navigation) -->
-        <nav class="absolute bottom-0 w-full bg-white border-t border-muji-border px-6 py-3 pb-8 md:pb-4 flex justify-around items-center z-20">
-            <button @click="currentTab = 'log'" class="flex flex-col items-center p-2 transition-colors" :class="currentTab === 'log' ? 'text-muji-green' : 'text-muji-light'">
+        <!-- ================= 底部導航欄 ================= -->
+        <nav class="absolute bottom-0 w-full bg-white border-t border-muji-border px-4 py-3 pb-8 md:pb-4 flex justify-between items-center z-20">
+            <button @click="currentTab = 'log'" class="flex flex-col items-center w-1/3 p-1 transition-colors" :class="currentTab === 'log' ? 'text-muji-green' : 'text-muji-light'">
                 <i class="fa-solid fa-pen-to-square text-xl mb-1"></i>
                 <span class="text-[10px] tracking-widest">記錄</span>
             </button>
-            <button @click="currentTab = 'guide'" class="flex flex-col items-center p-2 transition-colors" :class="currentTab === 'guide' ? 'text-muji-green' : 'text-muji-light'">
+            <button @click="currentTab = 'bento'" class="flex flex-col items-center w-1/3 p-1 transition-colors" :class="currentTab === 'bento' ? 'text-muji-green' : 'text-muji-light'">
+                <i class="fa-solid fa-box-open text-xl mb-1"></i>
+                <span class="text-[10px] tracking-widest">便當</span>
+            </button>
+            <button @click="currentTab = 'guide'" class="flex flex-col items-center w-1/3 p-1 transition-colors" :class="currentTab === 'guide' ? 'text-muji-green' : 'text-muji-light'">
                 <i class="fa-solid fa-book-open text-xl mb-1"></i>
                 <span class="text-[10px] tracking-widest">指南</span>
             </button>
         </nav>
 
+        <!-- ================= 新增/編輯 便當 Modal ================= -->
+        <transition name="fade">
+            <div v-if="isModalOpen" class="absolute inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-end md:items-center justify-center">
+                <transition name="slide-up" appear>
+                    <div class="bg-muji-bg w-full md:w-[90%] rounded-t-3xl md:rounded-3xl p-6 pb-12 md:pb-6 shadow-2xl h-[85%] md:h-auto overflow-y-auto no-scrollbar flex flex-col">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-xl font-medium">{{ form.id ? '編輯便當' : '新增便當公式' }}</h2>
+                            <button @click="closeModal" class="text-muji-light hover:text-muji-text p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
+                        </div>
+                        
+                        <div class="space-y-4 flex-1">
+                            <div>
+                                <label class="text-xs text-muji-light block mb-1">便當名稱</label>
+                                <input v-model="form.name" type="text" placeholder="例如：經典高纖雞肉" class="w-full bg-white rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-muji-green/50 border border-muji-border">
+                            </div>
+                            <div>
+                                <label class="text-xs text-muji-light block mb-1">蛋白質食材</label>
+                                <input v-model="form.protein" type="text" placeholder="例如：蒜香煎雞胸肉" class="w-full bg-white rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-muji-green/50 border border-muji-border">
+                            </div>
+                            <div>
+                                <label class="text-xs text-muji-light block mb-1">蔬菜食材</label>
+                                <input v-model="form.veg" type="text" placeholder="例如：西蘭花、紅蘿蔔" class="w-full bg-white rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-muji-green/50 border border-muji-border">
+                            </div>
+                            <div>
+                                <label class="text-xs text-muji-light block mb-1">碳水化合物</label>
+                                <input v-model="form.carb" type="text" placeholder="例如：烤番薯 1 條" class="w-full bg-white rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-muji-green/50 border border-muji-border">
+                            </div>
+                            <div>
+                                <label class="text-xs text-muji-light block mb-1">備註 / 烹飪貼士</label>
+                                <textarea v-model="form.notes" rows="2" placeholder="微波小貼士、醃料配方等..." class="w-full bg-white rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-muji-green/50 border border-muji-border resize-none"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="mt-6">
+                            <button @click="saveBento" class="w-full bg-muji-green text-white rounded-xl py-3.5 font-medium tracking-wide shadow-md active:scale-95 transition-transform">
+                                儲存公式
+                            </button>
+                        </div>
+                    </div>
+                </transition>
+            </div>
+        </transition>
+
         <!-- Toast 提示 -->
-        <div v-if="toastVisible" class="absolute top-20 left-1/2 transform -translate-x-1/2 bg-muji-text text-white text-sm px-6 py-3 rounded-full shadow-lg z-50 flex items-center transition-all">
-            <i class="fa-solid fa-check-circle text-muji-green mr-2"></i> 已儲存記錄
+        <div v-if="toastVisible" class="absolute top-20 left-1/2 transform -translate-x-1/2 bg-muji-text text-white text-sm px-6 py-3 rounded-full shadow-lg z-[60] flex items-center transition-all">
+            <i class="fa-solid fa-check-circle text-muji-green mr-2"></i> {{ toastMessage }}
         </div>
 
     </div>
@@ -217,48 +240,91 @@
                 const days = ['週一', '週二', '週三', '週四', '週五', '週六', '週日'];
                 const selectedDay = ref('週一');
                 const toastVisible = ref(false);
+                const toastMessage = ref('');
 
-                // 食物庫 (依照先前的對話建議)
+                // 基礎食物庫
                 const foods = {
                     protein: ['無', '煎雞胸肉', '去皮雞腿肉', '水煮蛋/炒滑蛋', '豆腐/豆漿', '清蒸魚柳/三文魚', '瘦牛肉/牛腱', '蝦仁'],
                     veg: ['無', '西蘭花', '椰菜花', '菠菜/小白菜', '翠玉瓜', '三色椒', '各式菇類', '番茄/青瓜', '綜合生菜'],
                     carb: ['無', '烤番薯', '糙米飯 (半碗)', '南瓜', '粟米', '燕麥', '蕎麥麵', '全麥麵包']
                 };
+                const mealLabels = { protein: '蛋白質 (1/4)', veg: '蔬菜 (1/2)', carb: '優質碳水 (1/4)' };
 
-                // 建立一週記錄的空數據結構
+                // 飲食記錄數據
                 const initRecords = () => {
                     let obj = {};
-                    days.forEach(day => {
-                        obj[day] = {
-                            lunch: { protein: '', veg: '', carb: '' },
-                            dinner: { protein: '', veg: '', carb: '' }
-                        };
-                    });
+                    days.forEach(day => { obj[day] = { lunch: { protein: '', veg: '', carb: '' }, dinner: { protein: '', veg: '', carb: '' } }; });
                     return obj;
                 };
-
                 const records = reactive(initRecords());
 
+                // ================= 便當公式功能 =================
+                const bentoList = reactive([
+                    { id: 1, name: '經典高纖雞肉', protein: '蒜香煎雞胸肉', veg: '西蘭花、椰菜花', carb: '烤番薯 1 條', notes: '微波後口感依然很好，適合週末批量備餐。' },
+                    { id: 2, name: '彩椒牛肉低脂', protein: '蒜片炒瘦牛肉片', veg: '三色椒炒洋蔥', carb: '粟米半條', notes: '彩椒富含維他命C，微波加熱不易變色出水。' },
+                    { id: 3, name: '海鮮豆腐輕盈', protein: '蝦仁炒板豆腐', veg: '翠玉瓜炒蘑菇', carb: '南瓜蒸飯', notes: '豆腐微波後會稍微出水，剛好可以讓便當不那麼乾。' }
+                ]);
+
+                const isModalOpen = ref(false);
+                const form = reactive({ id: null, name: '', protein: '', veg: '', carb: '', notes: '' });
+
+                const openModal = (bento = null) => {
+                    if (bento) {
+                        // 編輯模式
+                        Object.assign(form, bento);
+                    } else {
+                        // 新增模式
+                        Object.assign(form, { id: null, name: '', protein: '', veg: '', carb: '', notes: '' });
+                    }
+                    isModalOpen.value = true;
+                };
+
+                const closeModal = () => { isModalOpen.value = false; };
+
+                const saveBento = () => {
+                    if (!form.name || !form.protein) {
+                        alert("請至少填寫便當名稱與蛋白質！");
+                        return;
+                    }
+                    
+                    if (form.id) {
+                        // 更新
+                        const index = bentoList.findIndex(b => b.id === form.id);
+                        if (index !== -1) bentoList[index] = { ...form };
+                        showToast('已更新便當公式');
+                    } else {
+                        // 新增
+                        bentoList.push({ ...form, id: Date.now() });
+                        showToast('已新增便當公式');
+                    }
+                    closeModal();
+                };
+
+                const deleteBento = (id) => {
+                    if (confirm('確定要刪除這個便當公式嗎？')) {
+                        const index = bentoList.findIndex(b => b.id === id);
+                        if (index !== -1) bentoList.splice(index, 1);
+                        showToast('已刪除');
+                    }
+                };
+
+                // ================= 通用功能 =================
                 const pageTitle = computed(() => {
-                    return currentTab.value === 'log' ? '飲食手帳' : '減脂指南';
+                    if (currentTab.value === 'log') return '飲食手帳';
+                    if (currentTab.value === 'bento') return '便當公式';
+                    return '減脂指南';
                 });
 
-                const showToast = () => {
+                const showToast = (msg) => {
+                    toastMessage.value = msg;
                     toastVisible.value = true;
-                    setTimeout(() => {
-                        toastVisible.value = false;
-                    }, 2000);
+                    setTimeout(() => { toastVisible.value = false; }, 2000);
                 };
 
                 return {
-                    currentTab,
-                    days,
-                    selectedDay,
-                    foods,
-                    records,
-                    pageTitle,
-                    showToast,
-                    toastVisible
+                    currentTab, days, selectedDay, foods, mealLabels, records, pageTitle,
+                    bentoList, isModalOpen, form, openModal, closeModal, saveBento, deleteBento,
+                    showToast, toastVisible, toastMessage
                 }
             }
         }).mount('#app');
