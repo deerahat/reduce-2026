@@ -1,626 +1,267 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-HK">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>關西自由行 2026</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Vue 3 -->
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Google Fonts (日系感字體) -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
-  
-  <style>
-    body {
-      font-family: 'Noto Sans TC', sans-serif;
-      background-color: #E6DCD3; /* 電腦版背景底色，突顯手機容器 */
-      -webkit-tap-highlight-color: transparent;
-    }
-    /* 隱藏滾動條但保持功能 */
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
-  </style>
-</head>
-<body class="flex justify-center min-h-screen">
-
-  <!-- 手機 App 容器外框 -->
-  <div id="app" class="w-full max-w-md bg-[#FAF6F0] min-h-screen flex flex-col relative shadow-2xl">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>日系極簡・減脂飲食手帳</title>
     
-    <!-- 頁首 Banner 區塊 -->
-    <div class="relative w-full h-52 bg-[#E6DCD3] overflow-hidden shrink-0">
-      <img src="Cover banner.png" alt="Cover Banner" class="w-full h-full object-cover">
-      <div class="absolute inset-0 bg-gradient-to-b from-black/10 to-transparent"></div>
-    </div>
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for App Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Noto Sans TC for clean Japanese/Traditional Chinese typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
 
-    <!-- 主內容區域：pb-28 確保內容捲到底時不被固定導航欄遮擋 -->
-    <main class="-mt-8 relative z-10 bg-[#FAF6F0] rounded-t-[32px] px-4 pt-6 pb-28 flex-1">
-      
-      <!-- 頂部標題與核心資訊 -->
-      <div class="flex justify-between items-center mb-6 px-1">
-        <div>
-          <h1 class="text-2xl font-bold text-[#5C4636]">關西之旅 6Days</h1>
-          <p class="text-xs text-[#A39382] mt-0.5">2026 June 4 - June 9</p>
-        </div>
-        <div class="bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-[#E8DFD8] text-xs font-medium text-[#7A685A]">
-          <i class="fa-solid fa-wallet mr-1 text-[#8C7662]"></i> 1 JPY = {{ exchangeRate }} HKD
-        </div>
-      </div>
+    <!-- Tailwind 顏色配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'muji-bg': '#F9F8F6',      // 燕麥白背景
+                        'muji-card': '#FFFFFF',    // 純白卡片
+                        'muji-text': '#4A4A4A',    // 深灰文字 (非純黑)
+                        'muji-light': '#9CA3AF',   // 淺灰副標題
+                        'muji-green': '#8A9A86',   // 抹茶綠點綴
+                        'muji-brown': '#A68A6D',   // 大地棕色
+                        'muji-border': '#EAE8E3'   // 柔和邊框
+                    },
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
 
-      <!-- ==================== TAB 1: 每日行程 ==================== -->
-      <div v-if="activeTab === 'itinerary'">
-        <!-- 橫向滑動日期選單 -->
-        <div class="flex overflow-x-auto gap-3 pb-4 mb-4 no-scrollbar snap-x px-1">
-          <button 
-            v-for="(day, index) in days" 
-            :key="index"
-            @click="currentDayIndex = index"
-            class="flex-shrink-0 w-[72px] py-3 rounded-2xl text-center transition-all duration-300 snap-start border"
-            :class="currentDayIndex === index 
-              ? 'bg-[#5C4636] text-[#FAF6F0] border-[#5C4636] shadow-md shadow-[#5C4636]/10 transform scale-105' 
-              : 'bg-white text-[#7A685A] border-[#E8DFD8]'"
-          >
-            <div class="text-[11px] uppercase tracking-wider opacity-80">Day {{ index + 1 }}</div>
-            <div class="text-lg font-bold my-0.5">{{ day.date.split('/')[2] }}</div>
-            <div class="text-[10px] font-medium opacity-90">{{ day.city }}</div>
-          </button>
-        </div>
+    <style>
+        body { background-color: #E5E5E5; }
+        /* 隱藏滾動條但保留滾動功能，增加 App 沉浸感 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        /* 淡入動畫 */
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
 
-        <!-- 當日區域提示與天氣資訊 -->
-        <div class="bg-white rounded-2xl p-4 mb-5 border border-[#E8DFD8] flex justify-between items-center shadow-sm">
-          <div>
-            <span class="text-xs bg-[#EAE2D5] text-[#5C4636] px-2.5 py-1 rounded-full font-medium">
-              {{ days[currentDayIndex].city }}主要行程
-            </span>
-            <p class="text-[11px] text-[#A39382] mt-2">提示：點擊行程卡片可編輯或刪除</p>
-          </div>
-          <div class="text-right">
-            <div class="flex items-center justify-end text-[#5C4636]">
-              <i :class="getWeatherIcon(days[currentDayIndex].weather)" class="text-xl mr-2 text-[#8C7662]"></i>
-              <span class="text-lg font-semibold">{{ days[currentDayIndex].temp }}°C</span>
-            </div>
-            <span class="text-[11px] text-[#A39382]">{{ days[currentDayIndex].weather }}</span>
-          </div>
-        </div>
-
-        <!-- 行程卡片列表 -->
-        <div class="space-y-4 relative before:absolute before:top-2 before:bottom-2 before:left-[17px] before:w-0.5 before:bg-[#E8DFD8]">
-          <div 
-            v-for="(item, idx) in days[currentDayIndex].events" 
-            :key="item.id"
-            @click="openEditModal(item, idx)"
-            class="flex items-start space-x-3 relative group cursor-pointer"
-          >
-            <!-- 時間點節點 -->
-            <div class="w-9 h-9 rounded-full bg-white border-2 border-[#8C7662] flex items-center justify-center z-10 flex-shrink-0 text-[11px] font-bold text-[#5C4636] shadow-sm">
-              {{ item.time }}
-            </div>
-            <!-- 卡片主體 -->
-            <div class="flex-1 bg-white rounded-2xl p-4 border border-[#E8DFD8] hover:border-[#8C7662] transition-colors shadow-sm">
-              <div class="flex justify-between items-start">
-                <h4 class="font-bold text-[#4A3E3D] text-base">{{ item.location }}</h4>
-                <span class="text-[11px] bg-[#FAF6F0] text-[#8C7662] px-2 py-0.5 rounded-md flex items-center">
-                  <i class="fa-solid fa-temperature-three-quarters mr-1 scale-90"></i>{{ item.cardTemp || days[currentDayIndex].temp }}°C
-                </span>
-              </div>
-              <p v-if="item.note" class="text-xs text-[#7A685A] mt-2 bg-[#FAF6F0] p-2.5 rounded-xl border border-[#F2EAE1] italic">
-                <i class="fa-regular fa-comment-dots mr-1 opacity-70"></i>{{ item.note }}
-              </p>
-            </div>
-          </div>
-
-          <!-- 空行程狀態 -->
-          <div v-if="days[currentDayIndex].events.length === 0" class="text-center py-10 text-[#A39382] text-sm">
-            <i class="fa-regular fa-calendar-plus text-2xl mb-2 block opacity-50"></i>
-            今天還沒有安排行程喔
-          </div>
-        </div>
-
-        <!-- 新增行程按鈕 -->
-        <button 
-          @click="openAddModal"
-          class="w-full mt-6 bg-[#5C4636] text-[#FAF6F0] py-3.5 rounded-2xl font-medium shadow-md shadow-[#5C4636]/10 hover:bg-[#4A3728] transition-colors flex items-center justify-center space-x-2"
-        >
-          <i class="fa-solid fa-plus text-xs"></i>
-          <span>新增行程地點</span>
-        </button>
-      </div>
-
-      <!-- ==================== TAB 2: 極簡記帳 ==================== -->
-      <div v-if="activeTab === 'expenses'" class="space-y-5">
-        <!-- 匯率工具與分帳統計 -->
-        <div class="bg-white rounded-2xl p-5 border border-[#E8DFD8] shadow-sm">
-          <h3 class="font-bold text-[#5C4636] mb-3 text-sm flex items-center">
-            <i class="fa-solid fa-calculator mr-2 text-[#8C7662]"></i>智慧換算與分帳
-          </h3>
-          <div class="grid grid-cols-2 gap-3 mb-4">
-            <div class="bg-[#FAF6F0] p-3 rounded-xl border border-[#F2EAE1]">
-              <span class="text-[11px] text-[#A39382] block">即時匯率設定 (1日幣)</span>
-              <input type="number" step="0.001" v-model="exchangeRate" class="w-full bg-transparent font-bold text-base text-[#4A3E3D] focus:outline-none mt-1">
-            </div>
-            <div class="bg-[#FAF6F0] p-3 rounded-xl border border-[#F2EAE1]">
-              <span class="text-[11px] text-[#A39382] block">分帳總人數</span>
-              <input type="number" min="1" v-model="splitPeople" class="w-full bg-transparent font-bold text-base text-[#4A3E3D] focus:outline-none mt-1">
-            </div>
-          </div>
-          <div class="border-t border-[#E8DFD8] pt-3 mt-1 flex justify-between text-sm">
-            <div>
-              <span class="text-xs text-[#A39382]">總花費 (港幣)</span>
-              <p class="text-xl font-bold text-[#5C4636] mt-0.5">HK$ {{ totalExpenseHKD }}</p>
-            </div>
-            <div class="text-right">
-              <span class="text-xs text-[#A39382]">每人應付 (港幣)</span>
-              <p class="text-xl font-bold text-[#8C7662] mt-0.5">HK$ {{ perPersonHKD }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- 新增記帳表單 -->
-        <div class="bg-white rounded-2xl p-5 border border-[#E8DFD8] shadow-sm">
-          <h4 class="font-bold text-[#5C4636] mb-3 text-sm">記錄新一筆花費</h4>
-          <div class="space-y-3">
-            <div class="flex space-x-2">
-              <input type="text" v-model="newExpense.title" placeholder="品項名稱 (如: 晚餐)" class="flex-1 px-4 py-2.5 rounded-xl border border-[#E8DFD8] bg-[#FAF6F0] text-sm focus:outline-none focus:border-[#8C7662]">
-              <select v-model="newExpense.category" class="px-3 py-2.5 rounded-xl border border-[#E8DFD8] bg-[#FAF6F0] text-sm focus:outline-none text-[#7A685A]">
-                <option value="餐飲">🍱 餐飲</option>
-                <option value="交通">🚇 交通</option>
-                <option value="住宿">🏨 住宿</option>
-                <option value="購物">🛍️ 購物</option>
-                <option value="景點">🎟️ 景點</option>
-              </select>
-            </div>
-            <div class="flex items-center space-x-3">
-              <div class="flex-1 relative">
-                <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-[#A39382]">¥</span>
-                <input type="number" v-model="newExpense.amountJPY" placeholder="輸入日幣金額" class="w-full pl-8 pr-4 py-2.5 rounded-xl border border-[#E8DFD8] bg-[#FAF6F0] text-sm focus:outline-none focus:border-[#8C7662]">
-              </div>
-              <div class="text-xs text-[#A39382] w-24 truncate">
-                ≈ HK$ {{ (newExpense.amountJPY * exchangeRate).toFixed(1) }}
-              </div>
-              <button @click="addExpense" class="bg-[#5C4636] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#4A3728] transition-colors shrink-0">
-                記帳
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 記帳明細列表 -->
-        <div class="space-y-2">
-          <div class="flex justify-between items-center px-1">
-            <span class="text-xs font-bold text-[#7A685A] uppercase tracking-wider">消費明細表</span>
-            <span class="text-xs text-[#A39382]">共 {{ expenses.length }} 筆</span>
-          </div>
-          <div class="space-y-2 max-h-[350px] overflow-y-auto pr-1 no-scrollbar">
-            <div v-for="exp in expenses" :key="exp.id" class="bg-white rounded-xl p-3.5 border border-[#E8DFD8] flex justify-between items-center shadow-sm">
-              <div class="flex items-center space-x-3">
-                <div class="w-8 h-8 rounded-full bg-[#FAF6F0] flex items-center justify-center text-xs">
-                  {{ getCategoryIcon(exp.category) }}
-                </div>
-                <div>
-                  <h5 class="text-sm font-bold text-[#4A3E3D]">{{ exp.title }}</h5>
-                  <span class="text-[10px] text-[#A39382]">{{ exp.category }}</span>
-                </div>
-              </div>
-              <div class="text-right flex items-center space-x-3">
-                <div>
-                  <p class="text-sm font-bold text-[#5C4636]">¥{{ exp.amountJPY }}</p>
-                  <p class="text-[10px] text-[#A39382]">HK${{ exp.amountHKD }}</p>
-                </div>
-                <button @click="deleteExpense(exp.id)" class="text-[#A39382] hover:text-red-500 transition-colors p-1">
-                  <i class="fa-regular fa-trash-can text-xs"></i>
-                </button>
-              </div>
-            </div>
-            <div v-if="expenses.length === 0" class="text-center py-8 text-[#A39382] text-xs">
-              目前沒有任何消費明細。
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ==================== TAB 3: 地圖導航 ==================== -->
-      <div v-if="activeTab === 'map'" class="space-y-4">
-        <div class="bg-white rounded-2xl p-4 border border-[#E8DFD8] shadow-sm">
-          <div class="flex justify-between items-center mb-3">
-            <span class="text-xs font-bold bg-[#FAF6F0] text-[#5C4636] px-3 py-1 rounded-full border border-[#E8DFD8]">
-              <i class="fa-solid fa-location-dot mr-1 text-[#8C7662]"></i>智慧導航模式
-            </span>
-            <button @click="refreshLocation" class="text-xs text-[#8C7662] hover:underline flex items-center">
-              <i class="fa-solid fa-crosshairs mr-1"></i>重新定位我
-            </button>
-          </div>
-          
-          <!-- 地圖視覺載體 -->
-          <div class="w-full h-64 bg-[#EAE2D5] rounded-xl relative overflow-hidden border border-[#E8DFD8] flex items-center justify-center shadow-inner">
-            <div class="absolute inset-0 opacity-20 pointer-events-none bg-[radial-gradient(#5C4636_1px,transparent_1px)] [background-size:16px_16px]"></div>
-            
-            <!-- 目前位置釘選 -->
-            <div class="absolute top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2 text-center z-20">
-              <div class="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-md animate-pulse"></div>
-              <span class="bg-blue-600 text-white text-[9px] px-1.5 py-0.5 rounded shadow mt-1 block whitespace-nowrap">現在位置 (GPS)</span>
-            </div>
-
-            <!-- 動態讀取行程地點並釘選 -->
-            <div 
-              v-for="(item, index) in days[currentDayIndex].events" 
-              :key="item.id"
-              class="absolute z-20 transition-all duration-500"
-              :style="getMockCoords(index)"
-            >
-              <div class="flex flex-col items-center">
-                <div class="bg-[#5C4636] text-[#FAF6F0] text-[10px] px-2 py-0.5 rounded-md shadow-md font-medium whitespace-nowrap mb-1 border border-[#FAF6F0]/20">
-                  {{ item.time }} {{ item.location }}
-                </div>
-                <i class="fa-solid fa-location-pin text-[#8C7662] text-xl drop-shadow"></i>
-              </div>
-            </div>
-
-            <svg class="absolute inset-0 w-full h-full stroke-[#8C7662]/30 stroke-[2] fill-none">
-              <path d="M 30,50 Q 150,80 200,140 T 350,220" />
-            </svg>
-            <span class="text-xs text-[#7A685A] font-medium bg-white/95 px-3 py-1.5 rounded-full shadow border border-[#E8DFD8]/60 z-10">
-              已自動讀取當天 {{ days[currentDayIndex].events.length }} 個地點並釘選
-            </span>
-          </div>
-        </div>
-
-        <!-- 導航外連清單 -->
-        <div class="space-y-2">
-          <span class="text-xs font-bold text-[#7A685A] uppercase tracking-wider px-1 block">今日行程導航路線</span>
-          <div class="bg-white rounded-2xl p-4 border border-[#E8DFD8] space-y-3 shadow-sm">
-            <div v-for="(item, idx) in days[currentDayIndex].events" :key="item.id" class="flex items-center justify-between border-b border-[#FAF6F0] pb-2 last:border-0 last:pb-0">
-              <div class="flex items-center space-x-2">
-                <span class="w-5 h-5 bg-[#FAF6F0] rounded-full text-[10px] font-bold text-[#5C4636] flex items-center justify-center border border-[#E8DFD8]">
-                  {{ idx + 1 }}
-                </span>
-                <span class="text-sm font-medium text-[#4A3E3D]">{{ item.location }}</span>
-              </div>
-              <a 
-                :href="'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(item.location)" 
-                target="_blank"
-                class="bg-[#FAF6F0] hover:bg-[#EAE2D5] border border-[#E8DFD8] text-[#5C4636] text-xs px-3 py-1.5 rounded-xl transition-all font-medium flex items-center"
-              >
-                <i class="fa-solid fa-diamond-turn-right mr-1.5 text-[#8C7662]"></i>導航
-              </a>
-            </div>
-            <div v-if="days[currentDayIndex].events.length === 0" class="text-center py-4 text-[#A39382] text-xs">
-              今日無行程，無需產生導航。
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ==================== TAB 4: 待買清單 ==================== -->
-      <div v-if="activeTab === 'shopping'" class="space-y-4">
-        <div class="bg-white rounded-2xl p-5 border border-[#E8DFD8] shadow-sm">
-          <div class="flex justify-between items-end mb-3">
-            <h3 class="font-bold text-[#5C4636] text-sm flex items-center">
-              <i class="fa-solid fa-cart-shopping mr-2 text-[#8C7662]"></i>待買清單
-            </h3>
-            <span class="text-xs text-[#A39382] font-medium">已買 {{ boughtCount }} / {{ shoppingList.length }}</span>
-          </div>
-          
-          <div class="w-full bg-[#FAF6F0] rounded-full h-1.5 mb-4 overflow-hidden">
-            <div class="bg-[#8C7662] h-1.5 rounded-full transition-all duration-500" :style="{ width: shoppingProgress + '%' }"></div>
-          </div>
-
-          <div class="flex space-x-2">
-            <input 
-              type="text" 
-              v-model="newShoppingItem" 
-              @keyup.enter="addShoppingItem"
-              placeholder="輸入想買的物品 (如: 藥妝、伴手禮)" 
-              class="flex-1 px-4 py-2.5 rounded-xl border border-[#E8DFD8] bg-[#FAF6F0] text-sm focus:outline-none focus:border-[#8C7662]"
-            >
-            <button @click="addShoppingItem" class="bg-[#5C4636] text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[#4A3728] transition-colors shrink-0">
-              <i class="fa-solid fa-plus"></i>
-            </button>
-          </div>
-        </div>
-
-        <div class="space-y-2 max-h-[40vh] overflow-y-auto no-scrollbar">
-          <div 
-            v-for="item in shoppingList" 
-            :key="item.id" 
-            class="bg-white rounded-xl p-3.5 border flex justify-between items-center shadow-sm transition-all duration-300"
-            :class="item.bought ? 'border-[#E8DFD8]/50 opacity-70' : 'border-[#E8DFD8]'"
-          >
-            <div class="flex items-center space-x-3 flex-1 cursor-pointer" @click="toggleBought(item)">
-              <div 
-                class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors shadow-inner"
-                :class="item.bought ? 'border-[#8C7662] bg-[#8C7662]' : 'border-[#A39382] bg-transparent'"
-              >
-                <i v-if="item.bought" class="fa-solid fa-check text-white text-[10px]"></i>
-              </div>
-              <span class="text-sm font-medium transition-all" :class="item.bought ? 'text-[#A39382] line-through' : 'text-[#4A3E3D]'">
-                {{ item.name }}
-              </span>
-            </div>
-            <button @click="deleteShoppingItem(item.id)" class="text-[#A39382] hover:text-red-500 transition-colors p-2 ml-2">
-              <i class="fa-regular fa-trash-can text-xs"></i>
-            </button>
-          </div>
-          <div v-if="shoppingList.length === 0" class="text-center py-8 text-[#A39382] text-xs">
-            目前沒有待買物品喔！
-          </div>
-        </div>
-      </div>
-
-      <!-- ==================== TAB 5: 航班資訊 ==================== -->
-      <div v-if="activeTab === 'flights'" class="space-y-4">
-        <!-- 去程 -->
-        <div class="bg-white rounded-2xl p-5 border border-[#E8DFD8] relative overflow-hidden shadow-sm">
-          <div class="absolute top-0 right-0 bg-[#8C7662] text-[#FAF6F0] text-[10px] px-3 py-1 rounded-bl-xl uppercase tracking-wider font-medium">去程 Outbound</div>
-          <div class="flex items-center space-x-2 text-xs font-bold text-[#8C7662] mb-3">
-            <i class="fa-solid fa-plane-departure"></i><span>樂桃航空 MM068</span>
-          </div>
-          <div class="flex justify-between items-center my-2">
-            <div class="text-center w-24">
-              <h4 class="text-2xl font-bold text-[#5C4636] tracking-tight">HKG</h4>
-              <p class="text-xs text-[#A39382] mt-0.5">香港國際機場</p>
-              <p class="text-xs font-bold text-[#4A3E3D] mt-2">01:35</p>
-            </div>
-            <div class="flex-1 flex flex-col items-center px-2">
-              <span class="text-[10px] text-[#A39382] font-mono">4h 00m</span>
-              <div class="w-full flex items-center my-1">
-                <div class="w-1.5 h-1.5 rounded-full bg-[#E8DFD8]"></div>
-                <div class="flex-1 border-t-2 border-dashed border-[#E8DFD8] mx-1"></div>
-                <i class="fa-solid fa-plane text-[#8C7662] text-xs transform rotate-90"></i>
-                <div class="flex-1 border-t-2 border-dashed border-[#E8DFD8] mx-1"></div>
-                <div class="w-1.5 h-1.5 rounded-full bg-[#8C7662]"></div>
-              </div>
-            </div>
-            <div class="text-center w-24">
-              <h4 class="text-2xl font-bold text-[#5C4636] tracking-tight">KIX</h4>
-              <p class="text-xs text-[#A39382] mt-0.5">關西國際機場</p>
-              <p class="text-xs font-bold text-[#4A3E3D] mt-2">06:35</p>
-            </div>
-          </div>
-          <div class="border-t border-[#FAF6F0] pt-3 mt-4 text-xs text-[#7A685A]">出發日期：<strong>2026/06/04</strong></div>
-        </div>
-
-        <!-- 回程 -->
-        <div class="bg-white rounded-2xl p-5 border border-[#E8DFD8] relative overflow-hidden shadow-sm">
-          <div class="absolute top-0 right-0 bg-[#A39382] text-[#FAF6F0] text-[10px] px-3 py-1 rounded-bl-xl uppercase tracking-wider font-medium">回程 Inbound</div>
-          <div class="flex items-center space-x-2 text-xs font-bold text-[#8C7662] mb-3">
-            <i class="fa-solid fa-plane-arrival"></i><span>樂桃航空 MM067</span>
-          </div>
-          <div class="flex justify-between items-center my-2">
-            <div class="text-center w-24">
-              <h4 class="text-2xl font-bold text-[#5C4636] tracking-tight">KIX</h4>
-              <p class="text-xs text-[#A39382] mt-0.5">關西國際機場</p>
-              <p class="text-xs font-bold text-[#4A3E3D] mt-2">21:10</p>
-            </div>
-            <div class="flex-1 flex flex-col items-center px-2">
-              <span class="text-[10px] text-[#A39382] font-mono">4h 05m</span>
-              <div class="w-full flex items-center my-1">
-                <div class="w-1.5 h-1.5 rounded-full bg-[#E8DFD8]"></div>
-                <div class="flex-1 border-t-2 border-dashed border-[#E8DFD8] mx-1"></div>
-                <i class="fa-solid fa-plane text-[#A39382] text-xs transform rotate-90"></i>
-                <div class="flex-1 border-t-2 border-dashed border-[#E8DFD8] mx-1"></div>
-                <div class="w-1.5 h-1.5 rounded-full bg-[#8C7662]"></div>
-              </div>
-            </div>
-            <div class="text-center w-24">
-              <h4 class="text-2xl font-bold text-[#5C4636] tracking-tight">HKG</h4>
-              <p class="text-xs text-[#A39382] mt-0.5">香港國際機場</p>
-              <p class="text-xs font-bold text-[#4A3E3D] mt-2">01:15 <span class="text-[9px] text-red-500 font-medium">+1天</span></p>
-            </div>
-          </div>
-          <div class="border-t border-[#FAF6F0] pt-3 mt-4 text-xs text-[#7A685A]">出發日期：<strong>2026/06/09</strong></div>
-        </div>
-      </div>
-
-    </main>
-
-    <!-- ==================== 彈出視窗（新增/修改行程） ==================== -->
-    <div v-if="showModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end justify-center">
-      <div class="bg-white w-full max-w-md rounded-t-[28px] p-6 space-y-4 shadow-xl">
-        <div class="flex justify-between items-center border-b border-[#FAF6F0] pb-3">
-          <h3 class="text-lg font-bold text-[#5C4636]">{{ isEditMode ? '修改行程資訊' : '加入新目的地' }}</h3>
-          <button @click="closeModal" class="text-[#A39382] hover:text-[#5C4636] text-xl p-1"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div class="space-y-3">
-          <div>
-            <label class="text-xs font-bold text-[#7A685A] block mb-1">抵達時間</label>
-            <input type="text" v-model="modalData.time" placeholder="例如: 10:30" class="w-full px-4 py-2.5 rounded-xl border border-[#E8DFD8] bg-[#FAF6F0] text-sm focus:outline-none focus:border-[#8C7662]">
-          </div>
-          <div>
-            <label class="text-xs font-bold text-[#7A685A] block mb-1">地點名稱</label>
-            <input type="text" v-model="modalData.location" placeholder="輸入景點或餐廳名稱" class="w-full px-4 py-2.5 rounded-xl border border-[#E8DFD8] bg-[#FAF6F0] text-sm focus:outline-none focus:border-[#8C7662]">
-          </div>
-          <div>
-            <label class="text-xs font-bold text-[#7A685A] block mb-1">卡片氣溫 (°C)</label>
-            <input type="number" v-model="modalData.cardTemp" placeholder="留空則沿用當天預設氣溫" class="w-full px-4 py-2.5 rounded-xl border border-[#E8DFD8] bg-[#FAF6F0] text-sm focus:outline-none focus:border-[#8C7662]">
-          </div>
-          <div>
-            <label class="text-xs font-bold text-[#7A685A] block mb-1">備註資訊</label>
-            <textarea v-model="modalData.note" rows="3" placeholder="輸入乘車、票券或待辦備註事項..." class="w-full px-4 py-2.5 rounded-xl border border-[#E8DFD8] bg-[#FAF6F0] text-sm focus:outline-none focus:border-[#8C7662] resize-none"></textarea>
-          </div>
-        </div>
-        <div class="flex space-x-3 pt-2">
-          <button v-if="isEditMode" @click="deleteEvent" class="flex-1 bg-red-50 text-red-600 py-3 rounded-xl text-sm font-medium hover:bg-red-100 transition-colors">刪除地點</button>
-          <button @click="saveEvent" class="bg-[#5C4636] text-white py-3 px-8 rounded-xl text-sm font-medium hover:bg-[#4A3728] transition-colors flex-grow">{{ isEditMode ? '儲存變更' : '確認新增' }}</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ==================== 手機極致優化：完美固定底部導航欄 ==================== -->
-    <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md h-20 bg-white border-t border-[#E8DFD8] px-2 flex justify-between items-center z-40 shadow-[0_-4px_12px_rgba(0,0,0,0.03)] pb-2">
-      <button @click="activeTab = 'itinerary'" class="flex-1 flex flex-col items-center space-y-1 transition-colors" :class="activeTab === 'itinerary' ? 'text-[#5C4636]' : 'text-[#A39382]'">
-        <i class="text-[17px]" :class="activeTab === 'itinerary' ? 'fa-solid fa-calendar-days' : 'fa-regular fa-calendar'"></i>
-        <span class="text-[9px] font-medium scale-90">行程</span>
-      </button>
-      <button @click="activeTab = 'expenses'" class="flex-1 flex flex-col items-center space-y-1 transition-colors" :class="activeTab === 'expenses' ? 'text-[#5C4636]' : 'text-[#A39382]'">
-        <i class="text-[17px]" :class="activeTab === 'expenses' ? 'fa-solid fa-wallet' : 'fa-regular fa-paper-plane'"></i>
-        <span class="text-[9px] font-medium scale-90">記帳</span>
-      </button>
-      <button @click="activeTab = 'map'" class="flex-1 flex flex-col items-center space-y-1 transition-colors" :class="activeTab === 'map' ? 'text-[#5C4636]' : 'text-[#A39382]'">
-        <i class="text-[17px]" :class="activeTab === 'map' ? 'fa-solid fa-map-location-dot' : 'fa-solid fa-map'"></i>
-        <span class="text-[9px] font-medium scale-90">地圖</span>
-      </button>
-      <button @click="activeTab = 'shopping'" class="flex-1 flex flex-col items-center space-y-1 transition-colors" :class="activeTab === 'shopping' ? 'text-[#5C4636]' : 'text-[#A39382]'">
-        <i class="text-[17px]" :class="activeTab === 'shopping' ? 'fa-solid fa-cart-shopping' : 'fa-solid fa-cart-plus'"></i>
-        <span class="text-[9px] font-medium scale-90">購物</span>
-      </button>
-      <button @click="activeTab = 'flights'" class="flex-1 flex flex-col items-center space-y-1 transition-colors" :class="activeTab === 'flights' ? 'text-[#5C4636]' : 'text-[#A39382]'">
-        <i class="text-[17px]" :class="activeTab === 'flights' ? 'fa-solid fa-plane' : 'fa-solid fa-plane-up'"></i>
-        <span class="text-[9px] font-medium scale-90">航班</span>
-      </button>
-    </nav>
-
-  </div>
-
-  <!-- Vue App Logic Script -->
-  <script>
-    const { createApp, ref, computed, watch } = Vue;
-
-    createApp({
-      setup() {
-        const activeTab = ref('itinerary');
-        const currentDayIndex = ref(0);
-        const exchangeRate = ref(0.051); // 1 JPY = 0.051 HKD
-        const splitPeople = ref(2);
-
-        // 預設資料 (和歌山x2, 神戶x1, 大阪x3)
-        const defaultDays = [
-          { 
-            date: '2026/06/04', city: '和歌山', weather: '晴朗', temp: 24,
-            events: [
-              { id: 1, time: '08:30', location: '關西機場出發', cardTemp: 23, note: '領取關西周遊券，搭乘特急前往和歌山。' },
-              { id: 2, time: '11:00', location: '白濱海灘 (白良濱)', cardTemp: 25, note: '看絕美白色沙灘，踩踩海水放鬆。' },
-              { id: 3, time: '15:30', location: '串本潮岬燈塔', cardTemp: 24, note: '造訪本州最南端！燈塔視野無敵遼闊。' }
-            ]
-          },
-          { 
-            date: '2026/06/05', city: '和歌山', weather: '多雲', temp: 23,
-            events: [
-              { id: 4, time: '10:00', location: '黑潮市場', cardTemp: 22, note: '觀看精彩鮪魚解體秀，順便在這裡解決海鮮午餐！' },
-              { id: 5, time: '14:00', location: '和歌山城', cardTemp: 24, note: '爬上天守閣俯瞰市景，感受清幽的日式古城氣氛。' }
-            ]
-          },
-          { 
-            date: '2026/06/06', city: '神戶', weather: '晴朗', temp: 25,
-            events: [
-              { id: 6, time: '10:30', location: '布引瀑布', cardTemp: 22, note: '從新神戶站步行即可抵達，芬多精滿滿的能量景點。' },
-              { id: 7, time: '14:30', location: '北野異人館街', cardTemp: 25, note: '充滿歐洲風情的街道，找間復古咖啡廳坐坐。' },
-              { id: 8, time: '18:30', location: '神戶港夜景', cardTemp: 21, note: '在馬賽克廣場看神戶塔點燈，享用晚餐。' }
-            ]
-          },
-          { 
-            date: '2026/06/07', city: '大阪', weather: '陰天', temp: 26,
-            events: [
-              { id: 9, time: '09:30', location: '大阪城公園', cardTemp: 25, note: '跟宏偉的大阪城天守閣合照，順便散步。' },
-              { id: 10, time: '14:00', location: '心齋橋 / 道頓堀', cardTemp: 27, note: '找跑跑卡丁車招牌打卡，開啟瘋狂購物跟吃章魚燒模式！' }
-            ]
-          },
-          { 
-            date: '2026/06/08', city: '大阪', weather: '陣雨', temp: 22,
-            events: [
-              { id: 11, time: '09:00', location: '日本環球影城', cardTemp: 22, note: '提早排隊入園！必衝超級任天堂世界與哈利波特。' }
-            ]
-          },
-          { 
-            date: '2026/06/09', city: '大阪', weather: '晴朗', temp: 26,
-            events: [
-              { id: 12, time: '11:00', location: '通天閣 / 新世界', cardTemp: 26, note: '體驗昭和風情大阪，午餐吃有名的串炸。' },
-              { id: 13, time: '16:00', location: '臨空城 Outlet', cardTemp: 25, note: '搭機前的最後衝刺血拼！直接買完去機場過海關。' }
-            ]
-          }
-        ];
-
-        const defaultShoppingList = [
-          { id: 1, name: '布甸狗大阪限定周邊', bought: false },
-          { id: 2, name: '自駕路上喝的綠茶與零食', bought: true },
-          { id: 3, name: '和歌山梅酒', bought: false }
-        ];
-
-        // 讀取 LocalStorage 
-        const days = ref(JSON.parse(localStorage.getItem('kansai_days')) || defaultDays);
-        const expenses = ref(JSON.parse(localStorage.getItem('kansai_expenses')) || []);
-        const shoppingList = ref(JSON.parse(localStorage.getItem('kansai_shopping')) || defaultShoppingList);
-
-        // 數據自動儲存監聽
-        watch(days, (newVal) => localStorage.setItem('kansai_days', JSON.stringify(newVal)), { deep: true });
-        watch(expenses, (newVal) => localStorage.setItem('kansai_expenses', JSON.stringify(newVal)), { deep: true });
-        watch(shoppingList, (newVal) => localStorage.setItem('kansai_shopping', JSON.stringify(newVal)), { deep: true });
-
-        // 購物清單功能
-        const newShoppingItem = ref('');
-        const boughtCount = computed(() => shoppingList.value.filter(item => item.bought).length);
-        const shoppingProgress = computed(() => shoppingList.value.length === 0 ? 0 : (boughtCount.value / shoppingList.value.length) * 100);
-
-        const addShoppingItem = () => {
-          if (!newShoppingItem.value.trim()) return;
-          shoppingList.value.unshift({ id: Date.now(), name: newShoppingItem.value.trim(), bought: false });
-          newShoppingItem.value = '';
-        };
-        const toggleBought = (item) => item.bought = !item.bought;
-        const deleteShoppingItem = (id) => shoppingList.value = shoppingList.value.filter(item => item.id !== id);
-
-        // 記帳功能邏輯
-        const newExpense = ref({ title: '', category: '餐飲', amountJPY: null });
-        const totalExpenseHKD = computed(() => expenses.value.reduce((sum, exp) => sum + parseFloat(exp.amountHKD), 0).toFixed(1));
-        const perPersonHKD = computed(() => (!splitPeople.value || splitPeople.value <= 0) ? totalExpenseHKD.value : (parseFloat(totalExpenseHKD.value) / splitPeople.value).toFixed(1));
-
-        const addExpense = () => {
-          if (!newExpense.value.title || !newExpense.value.amountJPY) return;
-          expenses.value.unshift({
-            id: Date.now(),
-            title: newExpense.value.title,
-            category: newExpense.value.category,
-            amountJPY: newExpense.value.amountJPY,
-            amountHKD: (newExpense.value.amountJPY * exchangeRate.value).toFixed(1)
-          });
-          newExpense.value.title = '';
-          newExpense.value.amountJPY = null;
-        };
-        const deleteExpense = (id) => expenses.value = expenses.value.filter(e => e.id !== id);
-
-        // 行程編輯彈跳視窗邏輯
-        const showModal = ref(false);
-        const isEditMode = ref(false);
-        const modalData = ref({ time: '', location: '', note: '', cardTemp: null });
-        let activeEventIndex = null;
-
-        const openAddModal = () => { isEditMode.value = false; modalData.value = { time: '', location: '', note: '', cardTemp: null }; showModal.value = true; };
-        const openEditModal = (item, idx) => { isEditMode.value = true; activeEventIndex = idx; modalData.value = { ...item }; showModal.value = true; };
+    <!-- 模擬手機 App 容器 -->
+    <div id="app" class="w-full max-w-md h-[100dvh] md:h-[850px] bg-muji-bg text-muji-text relative flex flex-col shadow-2xl md:rounded-[2.5rem] overflow-hidden md:border-8 md:border-white">
         
-        const saveEvent = () => {
-          if (!modalData.value.time || !modalData.value.location) return;
-          if (!modalData.value.cardTemp) modalData.value.cardTemp = days.value[currentDayIndex.value].temp;
-          if (isEditMode.value) days.value[currentDayIndex.value].events[activeEventIndex] = { ...modalData.value };
-          else {
-            days.value[currentDayIndex.value].events.push({ id: Date.now(), ...modalData.value });
-            days.value[currentDayIndex.value].events.sort((a, b) => a.time.localeCompare(b.time));
-          }
-          closeModal();
-        };
+        <!-- App Header -->
+        <header class="pt-12 pb-4 px-6 bg-muji-bg/80 backdrop-blur-md z-10 sticky top-0">
+            <h1 class="text-2xl font-medium tracking-widest text-center">{{ pageTitle }}</h1>
+            <p class="text-xs text-muji-light text-center mt-1 tracking-wider">19:5 斷食計劃 • 久坐族專屬</p>
+        </header>
 
-        const deleteEvent = () => { if (isEditMode.value && activeEventIndex !== null) days.value[currentDayIndex.value].events.splice(activeEventIndex, 1); closeModal(); };
-        const closeModal = () => { showModal.value = false; activeEventIndex = null; };
+        <!-- Main Content (Scrollable) -->
+        <main class="flex-1 overflow-y-auto no-scrollbar px-6 pb-24">
+            
+            <transition name="fade" mode="out-in">
+                <!-- 頁面 1：飲食記錄 (Daily Log) -->
+                <div v-if="currentTab === 'log'" key="log" class="space-y-6">
+                    
+                    <!-- 星期選擇 -->
+                    <div class="flex space-x-3 overflow-x-auto no-scrollbar py-2">
+                        <button v-for="day in days" :key="day" 
+                            @click="selectedDay = day"
+                            :class="['flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors', 
+                                     selectedDay === day ? 'bg-muji-green text-white shadow-sm' : 'bg-muji-card text-muji-light border border-muji-border']">
+                            {{ day }}
+                        </button>
+                    </div>
 
-        // 輔助小工具
-        const getWeatherIcon = (status) => status === '晴朗' ? 'fa-solid fa-sun' : status === '多雲' ? 'fa-solid fa-cloud-sun' : status === '陰天' ? 'fa-solid fa-cloud' : 'fa-solid fa-cloud-showers-heavy';
-        const getCategoryIcon = (cat) => ({ '餐飲': '🍱', '交通': '🚇', '住宿': '🏨', '購物': '🛍️', '景點': '🎟️' }[cat] || '💰');
-        const getMockCoords = (index) => [{ top: '25%', left: '55%' }, { top: '45%', left: '68%' }, { top: '70%', left: '42%' }, { top: '50%', left: '20%' }][index % 4];
-        const refreshLocation = () => alert("已校準至關西地區鄰近基地台！");
+                    <!-- 午餐記錄 (13:00) -->
+                    <div class="bg-muji-card rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] border border-muji-border">
+                        <div class="flex items-center mb-4">
+                            <i class="fa-solid fa-sun text-muji-brown mr-2"></i>
+                            <h2 class="text-lg font-medium">午餐 <span class="text-sm text-muji-light ml-1">13:00</span></h2>
+                        </div>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="text-xs text-muji-green font-medium mb-1 block">蛋白質 (1/4)</label>
+                                <select v-model="records[selectedDay].lunch.protein" class="w-full bg-muji-bg rounded-xl px-4 py-2.5 text-sm appearance-none outline-none focus:ring-2 focus:ring-muji-green/50">
+                                    <option value="" disabled>選擇蛋白質...</option>
+                                    <option v-for="item in foods.protein" :value="item">{{ item }}</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-muji-green font-medium mb-1 block">蔬菜 (1/2)</label>
+                                <select v-model="records[selectedDay].lunch.veg" class="w-full bg-muji-bg rounded-xl px-4 py-2.5 text-sm appearance-none outline-none focus:ring-2 focus:ring-muji-green/50">
+                                    <option value="" disabled>選擇蔬菜...</option>
+                                    <option v-for="item in foods.veg" :value="item">{{ item }}</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-muji-green font-medium mb-1 block">優質碳水 (1/4)</label>
+                                <select v-model="records[selectedDay].lunch.carb" class="w-full bg-muji-bg rounded-xl px-4 py-2.5 text-sm appearance-none outline-none focus:ring-2 focus:ring-muji-green/50">
+                                    <option value="" disabled>選擇碳水...</option>
+                                    <option v-for="item in foods.carb" :value="item">{{ item }}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
 
-        return {
-          activeTab, currentDayIndex, days, exchangeRate, splitPeople, expenses, newExpense, totalExpenseHKD, perPersonHKD,
-          shoppingList, newShoppingItem, boughtCount, shoppingProgress, addShoppingItem, toggleBought, deleteShoppingItem,
-          showModal, isEditMode, modalData, addExpense, deleteExpense, openAddModal, openEditModal, saveEvent, deleteEvent, closeModal,
-          getWeatherIcon, getCategoryIcon, getMockCoords, refreshLocation
-        };
-      }
-    }).mount('#app');
-  </script>
+                    <!-- 晚餐記錄 (18:00) -->
+                    <div class="bg-muji-card rounded-2xl p-5 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] border border-muji-border">
+                        <div class="flex items-center mb-4">
+                            <i class="fa-solid fa-moon text-muji-brown mr-2"></i>
+                            <h2 class="text-lg font-medium">晚餐 <span class="text-sm text-muji-light ml-1">18:00</span></h2>
+                        </div>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="text-xs text-muji-green font-medium mb-1 block">蛋白質 (1/4)</label>
+                                <select v-model="records[selectedDay].dinner.protein" class="w-full bg-muji-bg rounded-xl px-4 py-2.5 text-sm appearance-none outline-none focus:ring-2 focus:ring-muji-green/50">
+                                    <option value="" disabled>選擇蛋白質...</option>
+                                    <option v-for="item in foods.protein" :value="item">{{ item }}</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-muji-green font-medium mb-1 block">蔬菜 (1/2)</label>
+                                <select v-model="records[selectedDay].dinner.veg" class="w-full bg-muji-bg rounded-xl px-4 py-2.5 text-sm appearance-none outline-none focus:ring-2 focus:ring-muji-green/50">
+                                    <option value="" disabled>選擇蔬菜...</option>
+                                    <option v-for="item in foods.veg" :value="item">{{ item }}</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-muji-green font-medium mb-1 block">優質碳水 (1/4)</label>
+                                <select v-model="records[selectedDay].dinner.carb" class="w-full bg-muji-bg rounded-xl px-4 py-2.5 text-sm appearance-none outline-none focus:ring-2 focus:ring-muji-green/50">
+                                    <option value="" disabled>選擇碳水 (晚餐可減量)...</option>
+                                    <option v-for="item in foods.carb" :value="item">{{ item }}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button @click="showToast" class="w-full bg-muji-green text-white rounded-xl py-3.5 font-medium tracking-wide shadow-md shadow-muji-green/30 active:scale-95 transition-transform">
+                        保存本日記錄
+                    </button>
+                </div>
+
+                <!-- 頁面 2：減脂貼士 & 外食建議 (Guide) -->
+                <div v-if="currentTab === 'guide'" key="guide" class="space-y-5">
+                    
+                    <!-- 核心法則 -->
+                    <div class="bg-muji-card rounded-2xl p-6 shadow-sm border border-muji-border relative overflow-hidden">
+                        <div class="absolute -right-4 -top-4 text-muji-bg opacity-50 text-7xl"><i class="fa-solid fa-leaf"></i></div>
+                        <h2 class="text-lg font-medium mb-4 relative z-10">久坐族減脂法則</h2>
+                        <ul class="space-y-3 text-sm leading-relaxed text-muji-text relative z-10">
+                            <li class="flex items-start">
+                                <span class="text-muji-brown mr-2 mt-0.5"><i class="fa-solid fa-clock"></i></span>
+                                <span><b>19:5 斷食：</b> 僅在下午 13:00 至 18:00 進食，其餘時間只喝水、黑咖啡或無糖茶。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-muji-brown mr-2 mt-0.5"><i class="fa-solid fa-arrow-down-short-wide"></i></span>
+                                <span><b>進食順序：</b> 蔬菜先吃 $\rightarrow$ 蛋白質 $\rightarrow$ 碳水化合物。穩定血糖不囤脂。</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-muji-brown mr-2 mt-0.5"><i class="fa-solid fa-person-walking"></i></span>
+                                <span><b>飯後微活動：</b> 午晚餐後站立 15 分鐘，避免立刻坐下，減少腹部脂肪囤積。</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- 外食指南 -->
+                    <div class="bg-muji-card rounded-2xl p-6 shadow-sm border border-muji-border">
+                        <h2 class="text-lg font-medium mb-4 flex items-center">
+                            外食應急指南 <i class="fa-solid fa-utensils text-muji-light ml-2 text-sm"></i>
+                        </h2>
+                        <div class="space-y-4 text-sm">
+                            <div class="pb-3 border-b border-muji-border/50">
+                                <p class="font-medium text-muji-green mb-1">🍜 湯粉麵類 (如米線)</p>
+                                <p class="text-muji-light">選擇清湯底，走甜/走肉碎，蛋白質選雞肉/魚蛋，<span class="text-red-400 font-medium">絕對不喝湯</span>（隱藏鹽分極高）。</p>
+                            </div>
+                            <div class="pb-3 border-b border-muji-border/50">
+                                <p class="font-medium text-muji-green mb-1">🍣 壽司/日本料理</p>
+                                <p class="text-muji-light">避開炸物（天婦羅）及沙律醬，選擇刺身、手卷、茶碗蒸及鹽烤魚。</p>
+                            </div>
+                            <div>
+                                <p class="font-medium text-muji-green mb-1">🍽️ 茶餐廳/冰室</p>
+                                <p class="text-muji-light">碟頭飯「走汁、少飯」，多加一碟「走油」的白灼菜。飲品轉熱檸水/茶（走甜）。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </transition>
+        </main>
+
+        <!-- 底部導航欄 (Bottom Navigation) -->
+        <nav class="absolute bottom-0 w-full bg-white border-t border-muji-border px-6 py-3 pb-8 md:pb-4 flex justify-around items-center z-20">
+            <button @click="currentTab = 'log'" class="flex flex-col items-center p-2 transition-colors" :class="currentTab === 'log' ? 'text-muji-green' : 'text-muji-light'">
+                <i class="fa-solid fa-pen-to-square text-xl mb-1"></i>
+                <span class="text-[10px] tracking-widest">記錄</span>
+            </button>
+            <button @click="currentTab = 'guide'" class="flex flex-col items-center p-2 transition-colors" :class="currentTab === 'guide' ? 'text-muji-green' : 'text-muji-light'">
+                <i class="fa-solid fa-book-open text-xl mb-1"></i>
+                <span class="text-[10px] tracking-widest">指南</span>
+            </button>
+        </nav>
+
+        <!-- Toast 提示 -->
+        <div v-if="toastVisible" class="absolute top-20 left-1/2 transform -translate-x-1/2 bg-muji-text text-white text-sm px-6 py-3 rounded-full shadow-lg z-50 flex items-center transition-all">
+            <i class="fa-solid fa-check-circle text-muji-green mr-2"></i> 已儲存記錄
+        </div>
+
+    </div>
+
+    <script>
+        const { createApp, ref, reactive, computed } = Vue;
+
+        createApp({
+            setup() {
+                const currentTab = ref('log');
+                const days = ['週一', '週二', '週三', '週四', '週五', '週六', '週日'];
+                const selectedDay = ref('週一');
+                const toastVisible = ref(false);
+
+                // 食物庫 (依照先前的對話建議)
+                const foods = {
+                    protein: ['無', '煎雞胸肉', '去皮雞腿肉', '水煮蛋/炒滑蛋', '豆腐/豆漿', '清蒸魚柳/三文魚', '瘦牛肉/牛腱', '蝦仁'],
+                    veg: ['無', '西蘭花', '椰菜花', '菠菜/小白菜', '翠玉瓜', '三色椒', '各式菇類', '番茄/青瓜', '綜合生菜'],
+                    carb: ['無', '烤番薯', '糙米飯 (半碗)', '南瓜', '粟米', '燕麥', '蕎麥麵', '全麥麵包']
+                };
+
+                // 建立一週記錄的空數據結構
+                const initRecords = () => {
+                    let obj = {};
+                    days.forEach(day => {
+                        obj[day] = {
+                            lunch: { protein: '', veg: '', carb: '' },
+                            dinner: { protein: '', veg: '', carb: '' }
+                        };
+                    });
+                    return obj;
+                };
+
+                const records = reactive(initRecords());
+
+                const pageTitle = computed(() => {
+                    return currentTab.value === 'log' ? '飲食手帳' : '減脂指南';
+                });
+
+                const showToast = () => {
+                    toastVisible.value = true;
+                    setTimeout(() => {
+                        toastVisible.value = false;
+                    }, 2000);
+                };
+
+                return {
+                    currentTab,
+                    days,
+                    selectedDay,
+                    foods,
+                    records,
+                    pageTitle,
+                    showToast,
+                    toastVisible
+                }
+            }
+        }).mount('#app');
+    </script>
 </body>
 </html>
