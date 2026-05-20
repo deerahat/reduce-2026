@@ -52,7 +52,7 @@
     <div id="app" class="w-full max-w-md h-[100dvh] md:h-[850px] bg-muji-bg text-muji-text relative flex flex-col shadow-2xl md:rounded-[2.5rem] overflow-hidden md:border-8 md:border-white">
         
         <!-- App Header -->
-        <header class="pt-12 pb-4 px-6 bg-muji-bg/90 backdrop-blur-md z-10 sticky top-0">
+        <header class="pt-10 pb-3 px-6 bg-muji-bg/90 backdrop-blur-md z-10 sticky top-0">
             <h1 class="text-2xl font-medium tracking-widest text-center">{{ pageTitle }}</h1>
             <p class="text-xs text-muji-light text-center mt-1 tracking-wider">16:8 斷食計劃 • 久坐族專屬</p>
         </header>
@@ -62,26 +62,49 @@
             
             <transition name="fade" mode="out-in">
                 
-                <!-- ================= 頁面 1：飲食記錄 ================= -->
-                <div v-if="currentTab === 'log'" key="log" class="space-y-6">
+                <!-- ================= 頁面 1：飲食記錄 (含月曆) ================= -->
+                <div v-if="currentTab === 'log'" key="log" class="space-y-5">
                     
-                    <!-- 水平滾動日期軸 -->
-                    <div id="date-strip" class="flex space-x-3 overflow-x-auto no-scrollbar py-2 px-1 snap-x">
-                        <button v-for="date in dateStrip" :key="date.fullDate" 
-                            :id="date.isToday ? 'today-btn' : ''"
-                            @click="selectDate(date.fullDate)"
-                            class="snap-center flex-shrink-0 flex flex-col items-center justify-center w-14 h-16 rounded-2xl transition-all shadow-sm relative border"
-                            :class="selectedDate === date.fullDate ? 'bg-muji-green text-white border-muji-green scale-105' : 'bg-muji-card text-muji-light border-muji-border hover:bg-muji-border/30'">
-                            <span class="text-[10px] font-medium mb-1">{{ date.dayOfWeek }}</span>
-                            <span class="text-lg font-bold" :class="selectedDate === date.fullDate ? 'text-white' : 'text-muji-text'">{{ date.dayNum }}</span>
-                            <!-- 今天的提示小紅點 -->
-                            <div v-if="date.isToday" class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-muji-brown rounded-full border-2 border-muji-bg"></div>
-                        </button>
+                    <!-- 完整月曆組件 -->
+                    <div class="bg-muji-card rounded-2xl p-4 shadow-[0_2px_10px_-3px_rgba(0,0,0,0.05)] border border-muji-border">
+                        <!-- 月曆切換控制列 -->
+                        <div class="flex justify-between items-center mb-4 px-2">
+                            <button @click="prevMonth" class="text-muji-light hover:text-muji-text p-1 transition-colors">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <span class="font-medium tracking-wider text-muji-text">
+                                {{ currentYear }} 年 {{ currentMonth + 1 }} 月
+                            </span>
+                            <button @click="nextMonth" class="text-muji-light hover:text-muji-text p-1 transition-colors">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
+
+                        <!-- 星期表頭 -->
+                        <div class="grid grid-cols-7 text-center text-[11px] font-medium text-muji-light mb-2">
+                            <div v-for="weekDay in ['日', '一', '二', '三', '四', '五', '六']" :key="weekDay">{{ weekDay }}</div>
+                        </div>
+
+                        <!-- 日期網格 -->
+                        <div class="grid grid-cols-7 gap-y-1.5 text-center">
+                            <!-- 前置空格 padding -->
+                            <div v-for="p in calendarPadding" :key="'p-'+p" class="aspect-square"></div>
+                            
+                            <!-- 每月日期按鈕 -->
+                            <button v-for="day in calendarDays" :key="day.fullDate"
+                                @click="selectDate(day.fullDate)"
+                                class="aspect-square flex flex-col items-center justify-center text-xs rounded-xl transition-all relative font-medium m-0.5"
+                                :class="selectedDate === day.fullDate ? 'bg-muji-green text-white shadow-sm scale-105' : 'text-muji-text hover:bg-muji-bg'">
+                                <span>{{ day.dayNum }}</span>
+                                <!-- 今天的提示小紅點 -->
+                                <div v-if="day.isToday" class="absolute bottom-1 w-1 h-1 rounded-full" :class="selectedDate === day.fullDate ? 'bg-white' : 'bg-muji-brown'"></div>
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- 顯示當前選擇日期 -->
+                    <!-- 當前選擇日期提示 -->
                     <div class="text-center text-sm font-medium text-muji-brown">
-                        {{ formattedSelectedDate }} 的飲食記錄
+                        {{ formattedSelectedDate }}
                     </div>
 
                     <!-- 午餐記錄 (12:00) -->
@@ -209,7 +232,7 @@
                         <h2 class="text-lg font-medium mb-4 relative z-10">16:8 斷食・久坐族法則</h2>
                         <ul class="space-y-3 text-sm leading-relaxed relative z-10">
                             <li class="flex items-start"><span class="text-muji-brown mr-2 mt-0.5"><i class="fa-solid fa-clock"></i></span><span><b>16:8 斷食：</b> 僅在 12:00 至 20:00 進食。下午 16:00 可安排一次高蛋白小食（如乳酪、豆漿）。</span></li>
-                            <li class="flex items-start"><span class="text-muji-brown mr-2 mt-0.5"><i class="fa-solid fa-arrow-down-short-wide"></i></span><span><b>進食順序：</b> 蔬菜 $\rightarrow$ 蛋白質 $\rightarrow$ 碳水。</span></li>
+                            <li class="flex items-start"><span class="text-muji-brown mr-2 mt-0.5"><i class="fa-solid fa-arrow-down-short-wide"></i></span><span><b>進食順序：</b> 蔬菜 → 蛋白質 → 碳水。</span></li>
                             <li class="flex items-start"><span class="text-muji-brown mr-2 mt-0.5"><i class="fa-solid fa-person-walking"></i></span><span><b>飯後微活動：</b> 午晚餐後站立 15 分鐘，避免立刻坐下。</span></li>
                         </ul>
                     </div>
@@ -228,7 +251,7 @@
 
         <!-- ================= 底部導航欄 ================= -->
         <nav class="absolute bottom-0 w-full bg-white border-t border-muji-border px-4 py-3 pb-8 md:pb-4 flex justify-between items-center z-20">
-            <button @click="currentTab = 'log'; scrollToToday();" class="flex flex-col items-center w-1/3 p-1 transition-colors" :class="currentTab === 'log' ? 'text-muji-green' : 'text-muji-light'">
+            <button @click="currentTab = 'log'" class="flex flex-col items-center w-1/3 p-1 transition-colors" :class="currentTab === 'log' ? 'text-muji-green' : 'text-muji-light'">
                 <i class="fa-solid fa-calendar-days text-xl mb-1"></i>
                 <span class="text-[10px] tracking-widest">記錄</span>
             </button>
@@ -295,7 +318,7 @@
     </div>
 
     <script>
-        const { createApp, ref, reactive, computed, onMounted, nextTick } = Vue;
+        const { createApp, ref, reactive, computed, onMounted } = Vue;
 
         createApp({
             setup() {
@@ -304,65 +327,82 @@
                 const toastVisible = ref(false);
                 const toastMessage = ref('');
 
-                // ================= 月曆/日期生成 =================
-                const generateDateStrip = () => {
-                    const dates = [];
-                    const today = new Date();
-                    const dayNames = ['日', '一', '二', '三', '四', '五', '六'];
-                    
-                    // 生成過去 7 天到未來 14 天的日期軸
-                    for (let i = -7; i <= 14; i++) {
-                        const d = new Date(today);
-                        d.setDate(today.getDate() + i);
-                        const dateString = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                        dates.push({
-                            fullDate: dateString,
-                            dayNum: d.getDate(),
-                            dayOfWeek: `週${dayNames[d.getDay()]}`,
-                            isToday: i === 0,
-                            displayMonth: d.getMonth() + 1
-                        });
-                    }
-                    return dates;
+                // ================= 2026年動態動態動態動態月曆核心 =================
+                const today = new Date();
+                const currentYear = ref(today.getFullYear());
+                const currentMonth = ref(today.getMonth()); // 0-11 代表 1-12月
+                
+                const formatDateString = (y, m, d) => {
+                    return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                 };
 
-                const dateStrip = ref(generateDateStrip());
-                const todayString = dateStrip.value.find(d => d.isToday).fullDate;
-                const selectedDate = ref(todayString);
+                const selectedDate = ref(formatDateString(today.getFullYear(), today.getMonth(), today.getDate()));
                 const records = reactive({});
 
-                // 格式化顯示選中的日期 (例如：5月20日 週三)
-                const formattedSelectedDate = computed(() => {
-                    const target = dateStrip.value.find(d => d.fullDate === selectedDate.value);
-                    return target ? `${target.displayMonth}月${target.dayNum}日 ${target.dayOfWeek}` : selectedDate.value;
+                // 計算當前月份的第一天是星期幾（用於網格前面留白）
+                const calendarPadding = computed(() => {
+                    const firstDay = new Date(currentYear.value, currentMonth.value, 1).getDay();
+                    return firstDay; // 返回 0 (週日) 到 6 (週六)，剛好作為循環填空次數
                 });
 
-                const selectDate = (date) => {
-                    // 如果該日期還沒建立紀錄結構，自動幫它初始化
-                    if (!records[date]) {
-                        records[date] = { 
+                // 計算當前月份共有多少天
+                const calendarDays = computed(() => {
+                    const days = [];
+                    const totalDays = new Date(currentYear.value, currentMonth.value + 1, 0).getDate();
+                    
+                    for (let i = 1; i <= totalDays; i++) {
+                        const dateStr = formatDateString(currentYear.value, currentMonth.value, i);
+                        const isToday = today.getFullYear() === currentYear.value && 
+                                        today.getMonth() === currentMonth.value && 
+                                        today.getDate() === i;
+                        days.push({
+                            dayNum: i,
+                            fullDate: dateStr,
+                            isToday: isToday
+                        });
+                    }
+                    return days;
+                });
+
+                // 格式化頂部顯示的完整選中日期資訊
+                const formattedSelectedDate = computed(() => {
+                    const parts = selectedDate.value.split('-');
+                    const d = new Date(parts[0], parts[1] - 1, parts[2]);
+                    const dayNames = ['週日', '週一', '週二', '週三', '週四', '週五', '週六'];
+                    return `${parts[0]}年${parseInt(parts[1])}月${parseInt(parts[2])}日 ${dayNames[d.getDay()]}`;
+                });
+
+                const prevMonth = () => {
+                    if (currentMonth.value === 0) {
+                        currentMonth.value = 11;
+                        currentYear.value--;
+                    } else {
+                        currentMonth.value--;
+                    }
+                };
+
+                const nextMonth = () => {
+                    if (currentMonth.value === 11) {
+                        currentMonth.value = 0;
+                        currentYear.value++;
+                    } else {
+                        currentMonth.value++;
+                    }
+                };
+
+                const selectDate = (dateStr) => {
+                    // 若該日期無紀錄結構，自動進行初始化
+                    if (!records[dateStr]) {
+                        records[dateStr] = { 
                             lunch: { protein: '', veg: '', carb: '' }, 
                             dinner: { protein: '', veg: '', carb: '' } 
                         };
                     }
-                    selectedDate.value = date;
+                    selectedDate.value = dateStr;
                 };
 
-                // 初始化啟動時，先載入「今天」的紀錄
-                selectDate(todayString);
-
-                const scrollToToday = () => {
-                    nextTick(() => {
-                        const todayBtn = document.getElementById('today-btn');
-                        if (todayBtn) {
-                            todayBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                        }
-                    });
-                };
-
-                onMounted(() => {
-                    scrollToToday();
-                });
+                // 頁面初始化：載入今天的紀錄
+                selectDate(selectedDate.value);
 
                 // ================= 基礎食物庫 =================
                 const foods = {
@@ -435,7 +475,7 @@
 
                 return {
                     currentTab, formulaType, foods, mealLabels, pageTitle,
-                    dateStrip, selectedDate, formattedSelectedDate, selectDate, scrollToToday, records,
+                    currentYear, currentMonth, calendarPadding, calendarDays, selectedDate, formattedSelectedDate, prevMonth, nextMonth, selectDate, records,
                     formulas, isModalOpen, form, openModal, closeModal, saveFormula, deleteFormula,
                     showToast, toastVisible, toastMessage
                 }
